@@ -29,6 +29,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 /** Add your docs here. */
@@ -41,16 +42,18 @@ public class PositionerConstants {
 
 
     /*Offsets and Constants */
-    public static final double canvasWidth = 3; //arbitray units but meters
-    public static final double canvasHeight = 3; //arbitrary units but meter
-    public static final double length = 0.5; //match the canvasWidth and canvasHeight units, meters
+    public static final double canvasWidth = Units.inchesToMeters(26.5); //arbitray units but meters
+    public static final double canvasHeight = Units.inchesToMeters(48); //arbitrary units but meter
+    public static final double length = Units.inchesToMeters(18); //match the canvasWidth and canvasHeight units, meters
     public static final double cancoderOffset = 0.25; //rotations
     public static final SensorDirectionValue cancoderDirection = SensorDirectionValue.CounterClockwise_Positive;
     public static final double sensorToMechanismRatio = 1;
     public static final double feedbackRotorOffset = 0;
     public static final InvertedValue rightInvert = InvertedValue.Clockwise_Positive;
     public static final InvertedValue leftInvert = InvertedValue.CounterClockwise_Positive;
-    public static final double gearing = (28.0) / (4.0);
+    public static final double gearing = (70 / 26) * (5) * (4) *(1/1.4);
+    public static final double armRootX = Units.inchesToMeters(13.25 - 3.25);
+    public static final double armRootY = Units.inchesToMeters(9);
 
     /*Simulation & Physics*/
     public static final DCMotor motor = DCMotor.getKrakenX60(2);
@@ -59,7 +62,7 @@ public class PositionerConstants {
 
 
     /*PID Values */
-    public static final double pGain = 5;
+    public static final double pGain = 100;
     public static final double dGain = 0;
     public static final double iGain = 0;
 
@@ -86,7 +89,7 @@ public class PositionerConstants {
 
     public static final FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
         .withFeedbackRemoteSensorID(cancoderId).withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder)
-        .withSensorToMechanismRatio(sensorToMechanismRatio).withFeedbackRotorOffset(feedbackRotorOffset);
+        .withSensorToMechanismRatio(sensorToMechanismRatio).withFeedbackRotorOffset(feedbackRotorOffset).withRotorToSensorRatio(gearing);
     
     public static final Slot0Configs slot0Configs = new Slot0Configs()
         .withGravityType(GravityTypeValue.Arm_Cosine).withKP(pGain).withKI(dGain).withKD(iGain);

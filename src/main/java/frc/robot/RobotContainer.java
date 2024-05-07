@@ -58,6 +58,9 @@ public class RobotContainer {
     /*Shooter up and down */
     joystick.R1().onTrue(arm.runOnce(() -> arm.goTo60()));
     joystick.L1().whileTrue(arm.run(() -> arm.decreaseAngle()));
+    joystick.triangle().onTrue(arm.runOnce(()-> arm.goTo60()));
+    joystick.circle().whileTrue(arm.runOnce(()-> arm.decreaseAngle()).repeatedly());
+
   }
 
   public RobotContainer() {

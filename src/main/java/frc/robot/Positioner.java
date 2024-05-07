@@ -14,15 +14,24 @@ import com.ctre.phoenix6.sim.CANcoderSimState;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Positioner extends SubsystemBase {
@@ -41,17 +50,17 @@ public class Positioner extends SubsystemBase {
   private static SingleJointedArmSim armSim = new SingleJointedArmSim(
     PositionerConstants.motor, 
     PositionerConstants.gearing, 
-    0.001, 
+    PositionerConstants.momentOfInertia, 
     PositionerConstants.length, 
     Units.degreesToRadians(PositionerConstants.minAngle), 
     Units.degreesToRadians(PositionerConstants.maxAngle), 
     true, //simulate gravity 
     0);
 
-  private static DCMotorSim testSim = new DCMotorSim(
-    DCMotor.getKrakenX60(1), 
-    PositionerConstants.gearing, 
-    PositionerConstants.momentOfInertia);
+  /*Publishing */
+  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  private final NetworkTable armTable = inst.getTable("Positioner");
+  private final StructPublisher<Pose3d> pose3dPublisher = armTable.getStructTopic("Arm Pose3d", Pose3d.struct).publish();
 
   private TalonFXSimState leftSim;
   private TalonFXSimState rightSim;
@@ -66,7 +75,7 @@ public class Positioner extends SubsystemBase {
     mechanismAngle = Rotation2d.fromRotations(cancoder.getPosition().getValue());
 
     mechanism2d = new Mechanism2d(PositionerConstants.canvasWidth, PositionerConstants.canvasHeight);
-    mechanismRoot = mechanism2d.getRoot("positioner", 0, 0);
+    mechanismRoot = mechanism2d.getRoot("positioner", PositionerConstants.armRootX, PositionerConstants.armRootY);
     mechanismLigament = mechanismRoot.append(
       new MechanismLigament2d("ligament", PositionerConstants.length, mechanismAngle.getDegrees())); //Starts at angle 0
 
@@ -119,6 +128,13 @@ public class Positioner extends SubsystemBase {
   public void updateMechanism(){
     mechanismAngle = Rotation2d.fromRotations(getArmAngleRotations());
     mechanismLigament.setAngle(mechanismAngle);
+
+    SmartDashboard.putData("/Positioner/Arm/Mechanism", mechanism2d);
+    double pitch = Units.degreesToRadians(0);
+    double x = - pitch / (Math.PI / 2); //  
+    double y = 0;
+    double z = pitch / (Math.PI / 2);
+    pose3dPublisher.set(new Pose3d(new Translation3d(x,y,z), new Rotation3d(0,pitch,0)));
   }
 
   public double getArmAngleRotations(){
@@ -167,7 +183,7 @@ public class Positioner extends SubsystemBase {
   }
 
   public void goTo60(){
-    goToAngle(60);
+    goToAngle(90);
   }
 
   @Override
@@ -182,28 +198,21 @@ public class Positioner extends SubsystemBase {
 
     leftSim = leftSideMotor.getSimState();
     rightSim = rightSideMotor.getSimState();
-    cancoderSim = cancoder.getSimState();
+    cancoderSim = cancoder.getSimState();    
 
-    var testSimMotor = leftSideMotor.getSimState();
-    
-
-    double testSimVoltage = testSimMotor.getMotorVoltage();
     double leftSimVoltage = leftSim.getMotorVoltage();
 
-    testSimMotor.setSupplyVoltage(RobotController.getBatteryVoltage());
-    testSim.setInputVoltage(testSimVoltage);
-    testSim.update(0.020);
 
     armSim.setInputVoltage(leftSimVoltage);
     armSim.update(0.020);
 
     cancoderSim.setRawPosition(Units.radiansToRotations(armSim.getAngleRads()));
-    leftSim.setRawRotorPosition(armSim.getAngleRads() / PositionerConstants.gearing);
-    rightSim.setRawRotorPosition(armSim.getAngleRads() / PositionerConstants.gearing);
+    leftSim.setRawRotorPosition(Units.radiansToRotations(armSim.getAngleRads() / PositionerConstants.gearing));
+    rightSim.setRawRotorPosition(Units.radiansToRotations(armSim.getAngleRads() / PositionerConstants.gearing));
 
-    leftSim.setRawRotorPosition(testSim.getAngularPositionRotations());
-    cancoderSim.setRawPosition(testSim.getAngularPositionRotations());
-    leftSim.setRotorVelocity(Units.radiansToRotations(testSim.getAngularVelocityRadPerSec()));
+    leftSim.setRotorVelocity(Units.rotationsToRadians(armSim.getVelocityRadPerSec() / PositionerConstants.gearing));
+    rightSim.setRotorVelocity(Units.rotationsToRadians(armSim.getVelocityRadPerSec() / PositionerConstants.gearing));
+
 
     System.out.println("ArmSim Degrees: " + Units.radiansToDegrees(armSim.getAngleRads()));
     System.out.println("ArmSim Velocity Rad/S: " + armSim.getVelocityRadPerSec());
@@ -211,8 +220,10 @@ public class Positioner extends SubsystemBase {
     System.out.println("Motor Voltage: " + leftSideMotor.getMotorVoltage());
     System.out.println("Output: " + armSim.getOutput().getData()[0]);
     System.out.println("Sim Voltage" + leftSimVoltage);
-    System.out.println("Test Sim Degrees" + Units.radiansToDegrees(testSim.getAngularPositionRad()));
+    System.out.println("Arm Degrees: " + getArmAngleDegrees());
     System.out.println();
     System.out.println();
+
+    updateMechanism();
   }
 }
