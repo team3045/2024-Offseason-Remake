@@ -9,21 +9,7 @@
       "/SmartDashboard/Module 3": "Mechanism2d"
     }
   },
-  "NetworkTables": {
-    "Persistent Values": {
-      "open": false
-    },
-    "Retained Values": {
-      "open": false
-    }
-  },
   "NetworkTables Info": {
-    "Clients": {
-      "open": true
-    },
-    "Server": {
-      "open": true
-    },
     "visible": true
   }
 }
