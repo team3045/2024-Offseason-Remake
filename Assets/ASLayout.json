@@ -1,0 +1,93 @@
+{
+  "version": "3.0.1",
+  "layout": [
+    {
+      "type": 1,
+      "legends": {
+        "left": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": []
+        },
+        "discrete": {
+          "fields": []
+        },
+        "right": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": []
+        }
+      },
+      "title": "Line Graph"
+    },
+    {
+      "type": 6,
+      "fields": [],
+      "listFields": [
+        [
+          {
+            "type": "Robot",
+            "key": "NT:/Swerve/Pose3d",
+            "sourceTypeIndex": 1,
+            "sourceType": "Pose3d"
+          },
+          {
+            "type": "Component (Robot)",
+            "key": "NT:/Positioner/Arm Pose3d",
+            "sourceTypeIndex": 1,
+            "sourceType": "Pose3d"
+          }
+        ],
+        []
+      ],
+      "options": {
+        "field": "Evergreen",
+        "alliance": "blue",
+        "robot": "2024 Chassis",
+        "unitDistance": "meters",
+        "unitRotation": "radians",
+        "cameraIndex": -2,
+        "fov": 50
+      },
+      "configHidden": false,
+      "title": "3D Field"
+    },
+    {
+      "type": 9,
+      "fields": [
+        {
+          "key": "NT:/Swerve/Real Swerve States",
+          "sourceTypeIndex": 1,
+          "sourceType": "SwerveModuleState[]"
+        },
+        {
+          "key": "NT:/Swerve/Desired Swerve States",
+          "sourceTypeIndex": 1,
+          "sourceType": "SwerveModuleState[]"
+        },
+        {
+          "key": "NT:/Swerve/Pose2d/rotation",
+          "sourceTypeIndex": 1,
+          "sourceType": "Rotation2d"
+        }
+      ],
+      "listFields": [],
+      "options": {
+        "maxSpeed": 5.1,
+        "rotationUnits": "radians",
+        "arrangement": "0,1,2,3",
+        "sizeLeftRight": 26.5,
+        "sizeFrontBack": 28,
+        "forwardDirection": "up"
+      },
+      "configHidden": false,
+      "title": "Swerve"
+    }
+  ]
+}

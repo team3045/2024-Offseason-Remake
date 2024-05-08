@@ -56,9 +56,9 @@ public class RobotContainer {
     drivetrain.registerTelemetry(logger::telemeterize);
 
     /*Shooter up and down */
-    joystick.R1().onTrue(arm.runOnce(() -> arm.goTo60()));
-    joystick.L1().whileTrue(arm.run(() -> arm.decreaseAngle()));
-    joystick.triangle().onTrue(arm.runOnce(()-> arm.goTo60()));
+    joystick.R1().whileTrue(arm.runOnce(() -> arm.increaseAngle()).repeatedly());
+    joystick.L1().whileTrue(arm.runOnce(() -> arm.decreaseAngle()).repeatedly());
+    joystick.triangle().whileTrue(arm.runOnce(()-> arm.increaseAngle()).repeatedly());
     joystick.circle().whileTrue(arm.runOnce(()-> arm.decreaseAngle()).repeatedly());
 
   }

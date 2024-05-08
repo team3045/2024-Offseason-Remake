@@ -18,15 +18,11 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -130,11 +126,11 @@ public class Positioner extends SubsystemBase {
     mechanismLigament.setAngle(mechanismAngle);
 
     SmartDashboard.putData("/Positioner/Arm/Mechanism", mechanism2d);
-    double pitch = Units.degreesToRadians(0);
-    double x = - pitch / (Math.PI / 2); //  
-    double y = 0;
-    double z = pitch / (Math.PI / 2);
-    pose3dPublisher.set(new Pose3d(new Translation3d(x,y,z), new Rotation3d(0,pitch,0)));
+    double pitch = -Units.degreesToRadians(mechanismLigament.getAngle()) + PositionerConstants.pitchOffset;
+
+    pose3dPublisher.set(new Pose3d(
+      new Translation3d(PositionerConstants.xOrigin,PositionerConstants.yOrigin,PositionerConstants.zOrigin), 
+      new Rotation3d(0,pitch,0)));
   }
 
   public double getArmAngleRotations(){
@@ -174,16 +170,15 @@ public class Positioner extends SubsystemBase {
   }
 
   public void increaseAngle(){
-    System.out.println("Arm angle: " + getArmAngleDegrees());
-    goToAngle(getArmAngleDegrees()+1);
+    goToAngle(getArmAngleDegrees()+2);
   }
 
   public void decreaseAngle(){
-    goToAngle(getArmAngleDegrees()-1);
+    goToAngle(getArmAngleDegrees()-2);
   }
 
   public void goTo60(){
-    goToAngle(90);
+    goToAngle(60);
   }
 
   @Override

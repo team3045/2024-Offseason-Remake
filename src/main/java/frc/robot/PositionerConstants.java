@@ -59,6 +59,10 @@ public class PositionerConstants {
     public static final DCMotor motor = DCMotor.getKrakenX60(2);
     public static final double mass = 1; //Kg
     public static final double momentOfInertia = 0.2525; //jKg meters squared
+    public static final double pitchOffset = Units.degreesToRadians(50);
+    public static final double xOrigin = Units.inchesToMeters(3.25);
+    public static final double yOrigin = 0;
+    public static final double zOrigin = Units.inchesToMeters(13);
 
 
     /*PID Values */
@@ -67,7 +71,7 @@ public class PositionerConstants {
     public static final double iGain = 0;
 
     /*Constraints */
-    public static final double maxAngle = 90;
+    public static final double maxAngle = 60;
     public static final double minAngle = 0;
     public static final double maxVelo = 3;
     public static final double maxAccel = 30; //reach in 0.1s 
