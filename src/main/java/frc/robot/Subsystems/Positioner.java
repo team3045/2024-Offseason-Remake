@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.Subsystems;
 
 
 import com.ctre.phoenix6.Utils;
@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.PositionerConstants;
 
 public class Positioner extends SubsystemBase {
   private Rotation2d mechanismAngle;
@@ -79,8 +80,6 @@ public class Positioner extends SubsystemBase {
     if(Utils.isSimulation()){
       setUpSim();
     }
-
-
   }
 
   public void configDevices(){
@@ -126,6 +125,7 @@ public class Positioner extends SubsystemBase {
     mechanismLigament.setAngle(mechanismAngle);
 
     SmartDashboard.putData("/Positioner/Arm/Mechanism", mechanism2d);
+    SmartDashboard.putNumber("/Positioner/Arm/Mechanism", getArmAngleDegrees());
     double pitch = -Units.degreesToRadians(mechanismLigament.getAngle()) + PositionerConstants.pitchOffset;
 
     pose3dPublisher.set(new Pose3d(
@@ -177,14 +177,9 @@ public class Positioner extends SubsystemBase {
     goToAngle(getArmAngleDegrees()-2);
   }
 
-  public void goTo60(){
-    goToAngle(60);
-  }
-
   @Override
   public void periodic() {
-    
-
+    updateMechanism();
   }
 
   @Override
@@ -207,17 +202,6 @@ public class Positioner extends SubsystemBase {
 
     leftSim.setRotorVelocity(Units.rotationsToRadians(armSim.getVelocityRadPerSec() / PositionerConstants.gearing));
     rightSim.setRotorVelocity(Units.rotationsToRadians(armSim.getVelocityRadPerSec() / PositionerConstants.gearing));
-
-
-    System.out.println("ArmSim Degrees: " + Units.radiansToDegrees(armSim.getAngleRads()));
-    System.out.println("ArmSim Velocity Rad/S: " + armSim.getVelocityRadPerSec());
-    System.out.println("Cancoder Position: " + Units.rotationsToDegrees(cancoder.getPosition().getValueAsDouble()));
-    System.out.println("Motor Voltage: " + leftSideMotor.getMotorVoltage());
-    System.out.println("Output: " + armSim.getOutput().getData()[0]);
-    System.out.println("Sim Voltage" + leftSimVoltage);
-    System.out.println("Arm Degrees: " + getArmAngleDegrees());
-    System.out.println();
-    System.out.println();
 
     updateMechanism();
   }
