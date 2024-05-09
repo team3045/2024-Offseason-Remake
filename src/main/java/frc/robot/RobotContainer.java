@@ -14,7 +14,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
-import frc.robot.generated.TunerConstants;
+import frc.robot.Constants.TunerConstants;
+import frc.robot.Subsystems.CommandSwerveDrivetrain;
+import frc.robot.Subsystems.Positioner;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -56,9 +58,9 @@ public class RobotContainer {
     drivetrain.registerTelemetry(logger::telemeterize);
 
     /*Shooter up and down */
-    joystick.R1().onTrue(arm.runOnce(() -> arm.goTo60()));
-    joystick.L1().whileTrue(arm.run(() -> arm.decreaseAngle()));
-    joystick.triangle().onTrue(arm.runOnce(()-> arm.goTo60()));
+    joystick.R1().whileTrue(arm.runOnce(() -> arm.increaseAngle()).repeatedly());
+    joystick.L1().whileTrue(arm.runOnce(() -> arm.decreaseAngle()).repeatedly());
+    joystick.triangle().whileTrue(arm.runOnce(()-> arm.increaseAngle()).repeatedly());
     joystick.circle().whileTrue(arm.runOnce(()-> arm.decreaseAngle()).repeatedly());
 
   }
