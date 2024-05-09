@@ -3,6 +3,7 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/Pose": "Field2d",
+      "/SmartDashboard//Climber/Mechanism": "Mechanism2d",
       "/SmartDashboard//Positioner/Arm/Mechanism": "Mechanism2d",
       "/SmartDashboard/Module 0": "Mechanism2d",
       "/SmartDashboard/Module 1": "Mechanism2d",
@@ -10,6 +11,11 @@
       "/SmartDashboard/Module 3": "Mechanism2d"
     },
     "windows": {
+      "/SmartDashboard//Climber/Mechanism": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard//Positioner/Arm/Mechanism": {
         "window": {
           "visible": true

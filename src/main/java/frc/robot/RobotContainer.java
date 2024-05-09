@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.Constants.TunerConstants;
+import frc.robot.Subsystems.Climber;
 import frc.robot.Subsystems.CommandSwerveDrivetrain;
 import frc.robot.Subsystems.Positioner;
 
@@ -28,6 +29,7 @@ public class RobotContainer {
   
   /*Subsystems */
   private final Positioner arm = new Positioner();
+  private final Climber climber = new Climber();
 
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDeadband(MaxSpeed * 0.15).withRotationalDeadband(MaxAngularRate * 0.15) // Add a 15% deadband
@@ -60,13 +62,14 @@ public class RobotContainer {
     /*Shooter up and down */
     joystick.R1().whileTrue(arm.runOnce(() -> arm.increaseAngle()).repeatedly());
     joystick.L1().whileTrue(arm.runOnce(() -> arm.decreaseAngle()).repeatedly());
-    joystick.triangle().whileTrue(arm.runOnce(()-> arm.increaseAngle()).repeatedly());
-    joystick.circle().whileTrue(arm.runOnce(()-> arm.decreaseAngle()).repeatedly());
-
+    joystick.triangle().onTrue(climber.runOnce(() -> climber.climbersUp()));
+    joystick.circle().whileTrue(climber.runOnce(()-> climber.decreaseHeight()).repeatedly());
   }
 
   public RobotContainer() {
     configureBindings();
+
+    
   }
 
   public Command getAutonomousCommand() {

@@ -26,6 +26,7 @@ import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -87,8 +88,8 @@ public class PositionerConstants {
 
     public static final CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs(); 
     public static final MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs()
-      .withMotionMagicAcceleration(cancoderId).withMotionMagicCruiseVelocity(cancoderId);
-    public static final MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs();
+      .withMotionMagicAcceleration(maxAccel).withMotionMagicCruiseVelocity(maxVelo);
+    public static final MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake); //Dont include invert here
     public static final VoltageConfigs voltageConfigs = new VoltageConfigs();
 
     public static final FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
