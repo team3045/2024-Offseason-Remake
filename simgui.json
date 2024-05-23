@@ -26,6 +26,20 @@
   "NetworkTables": {
     "Retained Values": {
       "open": false
+    },
+    "transitory": {
+      "Swerve": {
+        "Pose2d##v_/Swerve/Pose2d": {
+          "Rotation2d##v_rotation": {
+            "open": true
+          },
+          "Translation2d##v_translation": {
+            "open": true
+          },
+          "open": true
+        },
+        "open": true
+      }
     }
   },
   "NetworkTables Info": {

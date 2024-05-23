@@ -26,6 +26,9 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
 /** Add your docs here. */
@@ -48,7 +51,7 @@ public class ClimberConstants {
     public static final double rootY = 0;
 
     /*PID Values */
-    public static final double pGain = 1;
+    public static final double pGain = 20;
     public static final double dGain = 0;
     public static final double iGain = 0;
 
@@ -59,8 +62,21 @@ public class ClimberConstants {
 
     /*Physics */
     public static final double carriageMassKg = 1; 
-    public static final double drumRadiusMeters = 0.1;
+    public static final double drumRadiusMeters = 0.05 / Math.PI;
     public static final double circumference = 2 * drumRadiusMeters * Math.PI;
+
+    /*Sections */
+    public static final double sectionOneLength = Units.inchesToMeters(12);
+    public static final double sectionTwoLength = Units.inchesToMeters(7);
+    public static final double sectionThreeLength = Units.inchesToMeters(9);
+    public static final double sectionOneStart = 0;
+    public static final double sectionTwoStart = sectionOneStart + sectionOneLength;
+    public static final double sectionThreeStart = sectionTwoStart + sectionTwoLength;
+    public static final Pose3d rightBasePoseSec1 = new Pose3d(new Translation3d(-0.12,0.22,0.1), new Rotation3d(0,0,Units.degreesToRadians(180)));
+    public static final Pose3d rightBasePoseSec2 = new Pose3d(new Translation3d(-0.10,0.28,0.1), new Rotation3d(0,0,Units.degreesToRadians(180)));
+    public static final Pose3d rightBasePoseSec3 = new Pose3d(new Translation3d(-0.24,0.20,0.1), new Rotation3d(0,0,Units.degreesToRadians(0)));
+    public static final Pose3d leftBasePose = new Pose3d(new Translation3d(-0.25,-0.2,0.1), new Rotation3d());
+
 
     /*Heights */
     public static final double minHeightMeters = 1;

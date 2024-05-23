@@ -1,0 +1,156 @@
+{
+  "hubs": [
+    {
+      "x": 216,
+      "y": 128,
+      "width": 1111,
+      "height": 663,
+      "state": {
+        "sidebar": {
+          "width": 300,
+          "expanded": [
+            "/SmartDashboard/Positioner/Arm",
+            "/Swerve/Pose2d"
+          ]
+        },
+        "tabs": {
+          "selected": 4,
+          "tabs": [
+            {
+              "type": 0,
+              "path": "../docs/INDEX.md"
+            },
+            {
+              "type": 1,
+              "legendHeight": 0.3,
+              "legends": {
+                "left": {
+                  "lockedRange": null,
+                  "unitConversion": {
+                    "type": null,
+                    "factor": 1
+                  },
+                  "fields": []
+                },
+                "discrete": {
+                  "fields": []
+                },
+                "right": {
+                  "lockedRange": null,
+                  "unitConversion": {
+                    "type": null,
+                    "factor": 1
+                  },
+                  "fields": []
+                }
+              },
+              "title": "Line Graph"
+            },
+            {
+              "type": 6,
+              "uuid": "5dmqh6m5m2kd4n4htqe942fqwo5g8hdt",
+              "fields": [],
+              "listFields": [
+                [
+                  {
+                    "type": "Robot",
+                    "key": "NT:/Swerve/Pose3d",
+                    "sourceTypeIndex": 1,
+                    "sourceType": "Pose3d"
+                  },
+                  {
+                    "type": "Component (Robot)",
+                    "key": "NT:/Positioner/Arm Pose3d",
+                    "sourceTypeIndex": 1,
+                    "sourceType": "Pose3d"
+                  }
+                ],
+                []
+              ],
+              "options": {
+                "field": "2024 Field",
+                "alliance": "blue",
+                "robot": "2024 Chassis",
+                "unitDistance": "meters",
+                "unitRotation": "radians"
+              },
+              "configHidden": false,
+              "visualizer": {
+                "cameraIndex": -2,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  2,
+                  1,
+                  1.0000000000000002
+                ],
+                "cameraTarget": [
+                  0,
+                  0.5,
+                  0
+                ]
+              },
+              "title": "3D Field"
+            },
+            {
+              "type": 10,
+              "uuid": "wxiq5r9x00qy4z0d19kec0retd77w66d",
+              "fields": [
+                {
+                  "key": "NT:/SmartDashboard//Positioner/Arm/Mechanism",
+                  "sourceTypeIndex": 0,
+                  "sourceType": "Mechanism2d"
+                },
+                {
+                  "key": "NT:/SmartDashboard//Climber/Mechanism",
+                  "sourceTypeIndex": 0,
+                  "sourceType": "Mechanism2d"
+                },
+                null
+              ],
+              "listFields": [],
+              "options": {},
+              "configHidden": false,
+              "visualizer": null,
+              "title": "Mechanism"
+            },
+            {
+              "type": 9,
+              "uuid": "zb1gwgezkl9s8iqp96g7gwjstzc5w57f",
+              "fields": [
+                {
+                  "key": "NT:/Swerve/Real Swerve States",
+                  "sourceTypeIndex": 1,
+                  "sourceType": "SwerveModuleState[]"
+                },
+                {
+                  "key": "NT:/Swerve/Desired Swerve States",
+                  "sourceTypeIndex": 1,
+                  "sourceType": "SwerveModuleState[]"
+                },
+                {
+                  "key": "NT:/Swerve/Pose2d/rotation",
+                  "sourceTypeIndex": 1,
+                  "sourceType": "Rotation2d"
+                }
+              ],
+              "listFields": [],
+              "options": {
+                "maxSpeed": 5.1,
+                "rotationUnits": "radians",
+                "arrangement": "0,1,2,3",
+                "sizeLeftRight": 28,
+                "sizeFrontBack": 26.5,
+                "forwardDirection": "up"
+              },
+              "configHidden": false,
+              "visualizer": null,
+              "title": "Swerve"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "3.2.1"
+}

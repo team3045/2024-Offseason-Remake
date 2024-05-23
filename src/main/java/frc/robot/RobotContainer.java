@@ -63,7 +63,7 @@ public class RobotContainer {
     joystick.R1().whileTrue(arm.runOnce(() -> arm.increaseAngle()).repeatedly());
     joystick.L1().whileTrue(arm.runOnce(() -> arm.decreaseAngle()).repeatedly());
     joystick.triangle().onTrue(climber.runOnce(() -> climber.climbersUp()));
-    joystick.circle().whileTrue(climber.runOnce(()-> climber.decreaseHeight()).repeatedly());
+    joystick.circle().onTrue(climber.runOnce(()-> climber.climbersDown()));
   }
 
   public RobotContainer() {

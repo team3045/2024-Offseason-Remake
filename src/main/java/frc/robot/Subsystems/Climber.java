@@ -10,8 +10,15 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
@@ -34,12 +41,19 @@ public class Climber extends SubsystemBase {
   private MechanismRoot2d leftMechanismRoot;
   private MechanismRoot2d rightMechanismRoot;
   
+  /*3d Pose Loggers */
+  private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+  private final NetworkTable climberTable = inst.getTable("Climber");
+  private final StructPublisher<Pose3d> sectionOnePublisher = climberTable.getStructTopic("Sec One Pose3d", Pose3d.struct).publish(); 
+  private final StructPublisher<Pose3d> sectionTwoPublisher = climberTable.getStructTopic("Sec Two Pose3d", Pose3d.struct).publish(); 
+  private final StructPublisher<Pose3d> sectionThreePublisher = climberTable.getStructTopic("Sec THree Pose3d", Pose3d.struct).publish(); 
+  
   private Mechanism2d mechanism2d;
 
   /*Simulation stuff */
   private static ElevatorSim leftElevatorSim = new ElevatorSim(
-      DCMotor.getFalcon500(1), 
-      ClimberConstants.gearing, 
+      DCMotor.getFalcon500(1).withReduction(ClimberConstants.gearing), 
+      1, 
       ClimberConstants.carriageMassKg, 
       ClimberConstants.drumRadiusMeters, 
       ClimberConstants.minHeightMeters, 
@@ -48,8 +62,8 @@ public class Climber extends SubsystemBase {
       ClimberConstants.minHeightMeters);
 
   private static ElevatorSim rightElevatorSim = new ElevatorSim(
-    DCMotor.getFalcon500(1), 
-    ClimberConstants.gearing, 
+    DCMotor.getFalcon500(1).withReduction(ClimberConstants.gearing), 
+      1, 
     ClimberConstants.carriageMassKg, 
     ClimberConstants.drumRadiusMeters, 
     ClimberConstants.minHeightMeters, 
@@ -115,8 +129,8 @@ public class Climber extends SubsystemBase {
     leftSim.setSupplyVoltage(RobotController.getBatteryVoltage());
     rightSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-    leftSim.Orientation = ChassisReference.CounterClockwise_Positive;
-    rightSim.Orientation = ChassisReference.Clockwise_Positive;
+    leftSim.Orientation = ChassisReference.Clockwise_Positive;
+    rightSim.Orientation = ChassisReference.CounterClockwise_Positive;
   }
 
   public void setUpMechanism(){
@@ -135,20 +149,42 @@ public class Climber extends SubsystemBase {
     leftMechanismLigament.setLength(getHeightMeters());
     rightMechanismLigament.setLength(getHeightMeters());
 
-    if(Utils.isSimulation()){
-      leftMechanismLigament.setLength(leftElevatorSim.getPositionMeters());
-      rightMechanismLigament.setLength(rightElevatorSim.getPositionMeters());
-    }
-
     SmartDashboard.putData("/Climber/Mechanism", mechanism2d);
     SmartDashboard.putNumber("/Climber/Height", getHeightMeters());
     SmartDashboard.putString("/Climber/State", myState.toString());
   }
 
+  public void log3dPoses(){
+    sectionOnePublisher.set(ClimberConstants.rightBasePoseSec1);
+    sectionTwoPublisher.set(ClimberConstants.rightBasePoseSec2);
+    sectionThreePublisher.set(ClimberConstants.rightBasePoseSec3);
+
+    sectionTwoPublisher.set(ClimberConstants.rightBasePoseSec2.transformBy(new Transform3d(0,0,ClimberConstants.sectionTwoStart,new Rotation3d())));
+    sectionThreePublisher.set(ClimberConstants.rightBasePoseSec3.transformBy(new Transform3d(0, 0,ClimberConstants.sectionThreeStart, new Rotation3d())));
+    // if(getHeightMeters() <= ClimberConstants.sectionTwoStart){
+    //   sectionTwoPublisher.set(ClimberConstants.rightBasePoseSec1);
+    //   sectionThreePublisher.set(ClimberConstants.rightBasePoseSec1);
+    // }
+    // else if (getHeightMeters() > ClimberConstants.sectionTwoStart && getHeightMeters() < ClimberConstants.sectionThreeStart){
+    //   sectionTwoPublisher.set(new Pose3d(
+    //     new Translation3d(0, 0,getHeightMeters() - ClimberConstants.sectionTwoStart),
+    //     new Rotation3d()));
+    //   sectionThreePublisher.set(ClimberConstants.rightBasePoseSec1);
+    // }
+    // else{
+    //   sectionTwoPublisher.set(new Pose3d(
+    //     new Translation3d(0,0,ClimberConstants.sectionTwoStart),
+    //     new Rotation3d()));
+    //   sectionThreePublisher.set(new Pose3d(
+    //     new Translation3d(0, 0,getHeightMeters() - ClimberConstants.sectionThreeStart),
+    //     new Rotation3d()));
+    // }
+  }
+
 
   //Assumption that both Climbers always move together or atleast close, getPosition takes into account gearing
   public double getHeightMeters(){
-    return leftClimber.getPosition().getValueAsDouble() * ClimberConstants.circumference + ClimberConstants.minHeightMeters;
+    return leftClimber.getPosition().getValueAsDouble() * ClimberConstants.circumference;
   }
 
   /*State */
@@ -171,11 +207,12 @@ public class Climber extends SubsystemBase {
   /*Base Control method for height in */
   public void goToHeight(double desiredHeightMeters){
     if(desiredHeightMeters > ClimberConstants.maxHeightMeters){
+      System.out.println("Height too high");
       goToHeight(ClimberConstants.maxHeightMeters);
       return;
     }
     if(desiredHeightMeters < ClimberConstants.minHeightMeters){
-      System.out.println("Angle too Low");
+      System.out.println("Height too low");
       goToHeight(ClimberConstants.maxHeightMeters);
       return;
     }
@@ -200,11 +237,11 @@ public class Climber extends SubsystemBase {
   }
 
   public void decreaseHeight(){
-    goToHeight(getHeightMeters() - 0.2);
+    goToHeight(getHeightMeters() - 0.05);
   }
 
   public void increaseHeight(){
-    goToHeight(getHeightMeters() + 0.2);
+    goToHeight(getHeightMeters() + 0.05);
   }
 
 
@@ -226,22 +263,18 @@ public class Climber extends SubsystemBase {
     leftElevatorSim.update(0.02);
     rightElevatorSim.update(0.02);
 
-    leftSim.setRawRotorPosition(leftElevatorSim.getPositionMeters() / ClimberConstants.circumference);
-    rightSim.setRawRotorPosition(rightElevatorSim.getPositionMeters() / ClimberConstants.circumference);
+    leftSim.setRawRotorPosition((leftElevatorSim.getPositionMeters() / ClimberConstants.circumference) * ClimberConstants.gearing);
+    rightSim.setRawRotorPosition((rightElevatorSim.getPositionMeters() / ClimberConstants.circumference) * ClimberConstants.gearing);
     leftSim.setRotorVelocity(leftElevatorSim.getVelocityMetersPerSecond() / ClimberConstants.circumference);
     rightSim.setRotorVelocity(rightElevatorSim.getVelocityMetersPerSecond() / ClimberConstants.circumference);
 
-    SmartDashboard.putNumber("/Climber/Left/RotorPos", leftElevatorSim.getPositionMeters() / ClimberConstants.circumference);
-    SmartDashboard.putNumber("/Climber/Right/RotorPos", rightElevatorSim.getPositionMeters() / ClimberConstants.circumference);
-    SmartDashboard.putNumber("/Climber/Left/RotorVelo", leftElevatorSim.getVelocityMetersPerSecond() / ClimberConstants.circumference);
-    SmartDashboard.putNumber("/Climber/Right/RotorVelo", rightElevatorSim.getVelocityMetersPerSecond() / ClimberConstants.circumference);
-
-    System.out.println("Sim Pos: " + leftElevatorSim.getPositionMeters());
-    System.out.println("Sim velo: " + leftElevatorSim.getVelocityMetersPerSecond());
-    System.out.println("Sim output: " + leftElevatorSim.getOutput(0));
-    
+    SmartDashboard.putNumber("/Climber/Left/RotorPos", leftClimber.getPosition().getValueAsDouble());
+    SmartDashboard.putNumber("/Climber/Right/RotorPos", rightClimber.getPosition().getValueAsDouble());
+    SmartDashboard.putNumber("/Climber/Left/RotorVelo", leftClimber.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("/Climber/Right/RotorVelo", rightClimber.getVelocity().getValueAsDouble());
 
     updateMechanism();
+    log3dPoses();
   }
 
 
@@ -249,6 +282,7 @@ public class Climber extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     updateMechanism();
+    log3dPoses();
   }
 
 }
