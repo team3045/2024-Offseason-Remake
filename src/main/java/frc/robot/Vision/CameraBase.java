@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 
-public interface Vision {
+public interface CameraBase {
     final Vector<N3> baseVisionStdDev = VecBuilder.fill(5, 5, Units.degreesToRadians(900));
     final Vector<N3> throwoutStdDev = VecBuilder.fill(100, 100, Units.degreesToRadians(90000));
 

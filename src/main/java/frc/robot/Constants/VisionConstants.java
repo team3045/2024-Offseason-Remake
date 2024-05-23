@@ -3,6 +3,8 @@ package frc.robot.Constants;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import edu.wpi.first.math.geometry.Transform3d;
+
 public class VisionConstants {
     public static final double throwoutDistanceMeters = 6;
     public static final double throwoutAmbiguity = 0.4;
@@ -21,4 +23,11 @@ public class VisionConstants {
     public static final double baseStdDeg = 9000;
 
     public static final ArrayList<Integer> trustedTags = new ArrayList<>(Arrays.asList(6,7));
+
+    public static final double frontCamTrust = 1;
+    public static final double intakeCamTrust = 1;
+    
+    /*Robot to Camera tranforms */
+    public static final Transform3d frontTransform = new Transform3d();
+    public static final Transform3d intakeTransform = new Transform3d();
 }

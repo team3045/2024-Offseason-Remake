@@ -10,14 +10,21 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.Constants.TunerConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.Subsystems.Climber;
 import frc.robot.Subsystems.CommandSwerveDrivetrain;
 import frc.robot.Subsystems.Positioner;
+import frc.robot.Subsystems.VisionSub;
+import frc.robot.Vision.CameraBase;
+import frc.robot.Vision.LimelightCam;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -26,10 +33,17 @@ public class RobotContainer {
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final CommandPS4Controller joystick = new CommandPS4Controller(0); // My joystick
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
-  
+
+  /*Cameras */
+  private final CameraBase[] cameras = {
+    new LimelightCam("front", VisionConstants.frontTransform, VisionConstants.frontCamTrust),
+    new LimelightCam("intake", VisionConstants.intakeTransform, VisionConstants.frontCamTrust)
+  };
+
   /*Subsystems */
   private final Positioner arm = new Positioner();
   private final Climber climber = new Climber();
+  private final VisionSub vision = new VisionSub(cameras, drivetrain);
 
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDeadband(MaxSpeed * 0.15).withRotationalDeadband(MaxAngularRate * 0.15) // Add a 15% deadband
@@ -69,7 +83,8 @@ public class RobotContainer {
   public RobotContainer() {
     configureBindings();
 
-    
+    /*Update Pose with vision measurements*/
+    vision.periodic();
   }
 
   public Command getAutonomousCommand() {

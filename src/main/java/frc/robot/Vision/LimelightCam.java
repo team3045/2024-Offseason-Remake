@@ -19,7 +19,7 @@ import frc.robot.Vision.LimelightHelpers.PoseEstimate;
 import frc.robot.Vision.LimelightHelpers.RawFiducial;
 
 /** Add your docs here. */
-public class LimelightCam implements Vision{
+public class LimelightCam implements CameraBase{
     private String name;
     private Transform3d robotToCam;
     private Vector<N3> lastStdDevs;
@@ -33,7 +33,7 @@ public class LimelightCam implements Vision{
         this.robotToCam = robotToCam;
         this.trustLevel = trustLevel;
 
-        lastStdDevs = Vision.baseVisionStdDev;
+        lastStdDevs = CameraBase.baseVisionStdDev;
         lastTimestamp = 0;
     }
 
@@ -54,7 +54,7 @@ public class LimelightCam implements Vision{
         calcStdDevs(estimate);
         updateTimestamp(estimate);
 
-        if(lastStdDevs.elementSum() > Vision.throwoutStdDev.elementSum() - 1){
+        if(lastStdDevs.elementSum() > CameraBase.throwoutStdDev.elementSum() - 1){
             return Optional.empty();
         }
 
@@ -74,7 +74,7 @@ public class LimelightCam implements Vision{
     public void calcStdDevs(PoseEstimate estimate){
         /*throwout anything over a certain distance */
         if(estimate.avgTagDist > VisionConstants.throwoutDistanceMeters){
-            lastStdDevs = Vision.throwoutStdDev;
+            lastStdDevs = CameraBase.throwoutStdDev;
             return;
         }
 
@@ -85,7 +85,7 @@ public class LimelightCam implements Vision{
             estimate.pose.getTranslation().getY() < VisionConstants.minFieldY ||
             estimate.pose.getTranslation().getY() > VisionConstants.maxFieldY
         ) {
-            lastStdDevs = Vision.throwoutStdDev;
+            lastStdDevs = CameraBase.throwoutStdDev;
             return;
         }
 
@@ -121,7 +121,7 @@ public class LimelightCam implements Vision{
 
         /*Throws out if over ambiguity threshold*/
         if(totalAmbiguity / estimate.tagCount > VisionConstants.throwoutAmbiguity){
-            lastStdDevs = Vision.throwoutStdDev;
+            lastStdDevs = CameraBase.throwoutStdDev;
             return;
         }
         
