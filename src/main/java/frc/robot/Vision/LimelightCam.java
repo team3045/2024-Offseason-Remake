@@ -6,8 +6,6 @@ package frc.robot.Vision;
 
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
-
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;

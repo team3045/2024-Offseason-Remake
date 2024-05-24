@@ -31,7 +31,6 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 /** Add your docs here. */
 public class PositionerConstants {
