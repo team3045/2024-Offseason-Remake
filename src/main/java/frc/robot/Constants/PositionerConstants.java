@@ -35,18 +35,18 @@ import edu.wpi.first.math.util.Units;
 /** Add your docs here. */
 public class PositionerConstants {
     /*Motor IDs and Canbus */
-    public static final int leftMotorId = 15;
+    public static final int leftMotorId = 17;
     public static final int rightMotorId = 16;
-    public static final int cancoderId = 17;
-    public static final String canbus = "3045 Canivore";
+    public static final int cancoderId = 20;
+    public static final String canbus = "rio";
 
 
     /*Offsets and Constants */
     public static final double canvasWidth = Units.inchesToMeters(26.5); //arbitray units but meters
     public static final double canvasHeight = Units.inchesToMeters(48); //arbitrary units but meter
     public static final double length = Units.inchesToMeters(18); //match the canvasWidth and canvasHeight units, meters
-    public static final double cancoderOffset = 0.25; //rotations
-    public static final SensorDirectionValue cancoderDirection = SensorDirectionValue.CounterClockwise_Positive;
+    public static final double cancoderOffset =  Units.degreesToRotations(-148.974609375+15); //rotations
+    public static final SensorDirectionValue cancoderDirection = SensorDirectionValue.Clockwise_Positive;
     public static final double sensorToMechanismRatio = 1;
     public static final double feedbackRotorOffset = 0;
     public static final InvertedValue rightInvert = InvertedValue.Clockwise_Positive;
@@ -66,7 +66,7 @@ public class PositionerConstants {
 
 
     /*PID Values */
-    public static final double pGain = 100;
+    public static final double pGain = 10;
     public static final double dGain = 0;
     public static final double iGain = 0;
 

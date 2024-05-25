@@ -4,7 +4,6 @@
 
 package frc.robot.Vision;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
@@ -148,6 +147,7 @@ public class GremlinPhotonCam implements CameraBase{
         xyStd *= trustLevel; //Trust one cam more than others, Works on the Base
         if(avgDist >= VisionConstants.trustedMaxDistance){
             double addedStd = VisionConstants.distanceModifier * avgDist;
+            xyStd += addedStd;
         }
 
          /*Trust measurements with multiple tags more */

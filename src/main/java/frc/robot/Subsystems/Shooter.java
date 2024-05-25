@@ -7,6 +7,9 @@ package frc.robot.Subsystems;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -28,15 +31,20 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.PositionerConstants;
+import frc.robot.Constants.ShooterConstants;
 
-public class Positioner extends SubsystemBase {
+public class Shooter extends SubsystemBase {
   private Rotation2d mechanismAngle;
 
   private TalonFX leftSideMotor = new TalonFX(PositionerConstants.leftMotorId, PositionerConstants.canbus);
   private TalonFX rightSideMotor = new TalonFX(PositionerConstants.rightMotorId, PositionerConstants.canbus);
   private CANcoder cancoder = new CANcoder(PositionerConstants.cancoderId, PositionerConstants.canbus);
+  private TalonFX topShooterMotor = new TalonFX(ShooterConstants.topMotorId, ShooterConstants.canbus);
+  private TalonFX botShooterMotor = new TalonFX(ShooterConstants.botMotorId, ShooterConstants.canbus);
 
   /*Mechanism2d stuff for Sim and Dashboard */
   private MechanismLigament2d mechanismLigament;
@@ -65,7 +73,7 @@ public class Positioner extends SubsystemBase {
 
 
   /** Creates a new Positioner. */
-  public Positioner() {
+  public Shooter() {
     configDevices();
 
     /*Set up mechanism */
@@ -90,6 +98,8 @@ public class Positioner extends SubsystemBase {
     /*Motor Config */
     leftSideMotor.clearStickyFaults();
     rightSideMotor.clearStickyFaults();
+    topShooterMotor.clearStickyFaults();
+    botShooterMotor.clearStickyFaults();
 
     leftSideMotor.getConfigurator().apply(
       PositionerConstants.motorConfig.
@@ -101,9 +111,12 @@ public class Positioner extends SubsystemBase {
       withMotorOutput(PositionerConstants.motorOutputConfigs.
         withInverted(PositionerConstants.rightInvert)));  
 
-    rightSideMotor.getPosition().setUpdateFrequency(100);
-    leftSideMotor.getPosition().setUpdateFrequency(100);
-    cancoder.getPosition().setUpdateFrequency(100);
+    rightSideMotor.getPosition().setUpdateFrequency(50);
+    leftSideMotor.getPosition().setUpdateFrequency(50);
+    cancoder.getPosition().setUpdateFrequency(50);
+
+    topShooterMotor.getConfigurator().apply(ShooterConstants.config);
+    botShooterMotor.getConfigurator().apply(ShooterConstants.config);
   }
 
   public void setUpSim(){
@@ -208,5 +221,32 @@ public class Positioner extends SubsystemBase {
     rightSim.setRotorVelocity(Units.rotationsToRadians(armSim.getVelocityRadPerSec() / PositionerConstants.gearing));
 
     updateMechanism();
+  }
+
+  /*FlyWheel Low Level Actions*/
+
+  public void setShooterRPS(double topDesiredRPS, double botDesiredRPS){
+    //VelocityTorqueCurrentFOC request = new VelocityTorqueCurrentFOC(desiredRPS);
+
+    VelocityVoltage request = new VelocityVoltage(0).withAcceleration(ShooterConstants.maxAccel);
+    topShooterMotor.setControl(request.withVelocity(topDesiredRPS));
+    botShooterMotor.setControl(request.withVelocity(botDesiredRPS));
+  }
+
+  public void setMaxSpeed(){
+    topShooterMotor.set(0.95);
+    botShooterMotor.set(0.9);
+  }
+
+  public Command getShooterSpeedCommand(double topDesiredRPS, double botDesiredRPS){
+    return Commands.run(() -> setShooterRPS(topDesiredRPS, botDesiredRPS), this);
+  }
+
+  public Command getShooterMaxSpeedCommand(){
+    return Commands.run(() -> setMaxSpeed(), this);
+  }
+
+  public Command stopCommand(){
+    return Commands.run(() -> setShooterRPS(0, 0), this);
   }
 }

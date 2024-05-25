@@ -18,7 +18,7 @@ import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Subsystems.Climber;
 import frc.robot.Subsystems.CommandSwerveDrivetrain;
-import frc.robot.Subsystems.Positioner;
+import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.VisionSub;
 import frc.robot.Vision.CameraBase;
 import frc.robot.Vision.GremlinLimelightCam;
@@ -38,7 +38,7 @@ public class RobotContainer {
   };
 
   /*Subsystems */
-  private final Positioner arm = new Positioner();
+  private final Shooter shooter = new Shooter();
   private final Climber climber = new Climber();
   public static final VisionSub vision = new VisionSub(cameras, drivetrain);
 
@@ -71,10 +71,14 @@ public class RobotContainer {
     drivetrain.registerTelemetry(logger::telemeterize);
 
     /*Shooter up and down */
-    joystick.R1().whileTrue(arm.runOnce(() -> arm.increaseAngle()).repeatedly());
-    joystick.L1().whileTrue(arm.runOnce(() -> arm.decreaseAngle()).repeatedly());
+    joystick.R1().whileTrue(shooter.runOnce(() -> shooter.increaseAngle()).repeatedly());
+    joystick.L1().whileTrue(shooter.runOnce(() -> shooter.decreaseAngle()).repeatedly());
     joystick.triangle().onTrue(climber.runOnce(() -> climber.climbersUp()));
     joystick.circle().onTrue(climber.runOnce(()-> climber.climbersDown()));
+
+    joystick.L2().toggleOnTrue(shooter.getShooterMaxSpeedCommand());
+    joystick.L2().toggleOnFalse(shooter.stopCommand());
+
   }
 
   public RobotContainer() {
