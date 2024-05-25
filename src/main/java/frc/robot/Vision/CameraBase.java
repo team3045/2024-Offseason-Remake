@@ -2,6 +2,8 @@ package frc.robot.Vision;
 
 import java.util.Optional;
 
+import org.photonvision.simulation.SimCameraProperties;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -18,4 +20,6 @@ public interface CameraBase {
     Optional<Pose3d> getEstimatedPose3d();
     Transform3d getRobotToCam();
     double getTimeStamp();
+    SimCameraProperties getCamProperties();
+    double getTrustLevel();
 }

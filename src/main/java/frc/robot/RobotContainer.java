@@ -21,7 +21,7 @@ import frc.robot.Subsystems.CommandSwerveDrivetrain;
 import frc.robot.Subsystems.Positioner;
 import frc.robot.Subsystems.VisionSub;
 import frc.robot.Vision.CameraBase;
-import frc.robot.Vision.LimelightCam;
+import frc.robot.Vision.GremlinLimelightCam;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -29,18 +29,18 @@ public class RobotContainer {
 
   /* Setting up bindings for necessary control of the swerve drive platform */
   private final CommandPS4Controller joystick = new CommandPS4Controller(0); // My joystick
-  private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
+  private static final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
 
   /*Cameras */
-  private final CameraBase[] cameras = {
-    new LimelightCam("front", VisionConstants.frontTransform, VisionConstants.frontCamTrust),
-    new LimelightCam("intake", VisionConstants.intakeTransform, VisionConstants.frontCamTrust)
+  private static final CameraBase[] cameras = {
+    new GremlinLimelightCam("front", VisionConstants.frontTransform, VisionConstants.frontCamTrust, VisionConstants.LL3_1280_720()),
+    new GremlinLimelightCam("intake", VisionConstants.intakeTransform, VisionConstants.frontCamTrust, VisionConstants.LL3_1280_720())
   };
 
   /*Subsystems */
   private final Positioner arm = new Positioner();
   private final Climber climber = new Climber();
-  private final VisionSub vision = new VisionSub(cameras, drivetrain);
+  public static final VisionSub vision = new VisionSub(cameras, drivetrain);
 
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDeadband(MaxSpeed * 0.15).withRotationalDeadband(MaxAngularRate * 0.15) // Add a 15% deadband

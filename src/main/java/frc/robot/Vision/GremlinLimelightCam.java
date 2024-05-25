@@ -6,33 +6,38 @@ package frc.robot.Vision;
 
 import java.util.Optional;
 
+import org.photonvision.simulation.SimCameraProperties;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Vision.LimelightHelpers.PoseEstimate;
 import frc.robot.Vision.LimelightHelpers.RawFiducial;
 
 /** Add your docs here. */
-public class LimelightCam implements CameraBase{
+public class GremlinLimelightCam implements CameraBase{
     private String name;
     private Transform3d robotToCam;
     private Vector<N3> lastStdDevs;
     private double lastTimestamp;
+    private SimCameraProperties properties;
 
     /*Between 0 and 1 Lower Values are more trusted 1 is the normal Level*/
     private double trustLevel; 
 
-    public LimelightCam(String name, Transform3d robotToCam, double trustLevel){
-        this.name = "liemlight-" + name;
+    public GremlinLimelightCam(String name, Transform3d robotToCam, double trustLevel, SimCameraProperties properties){
+        this.name = "limelight-" + name;
         this.robotToCam = robotToCam;
         this.trustLevel = trustLevel;
+        this.properties = properties;
 
         lastStdDevs = CameraBase.baseVisionStdDev;
-        lastTimestamp = 0;
+        lastTimestamp = Timer.getFPGATimestamp();
     }
 
     @Override
@@ -91,14 +96,14 @@ public class LimelightCam implements CameraBase{
 
         lastStdDevs = VecBuilder.fill(VisionConstants.baseStdX, VisionConstants.baseStdY, VisionConstants.baseStdDeg);
         double xyStd = VisionConstants.baseStdX;
+
+        xyStd *= trustLevel; //We might trust one camera more than another
         
         /*Scale based on distance, if over a certain threshold, less than that threshold we essentially assume is perfect*/
         if(estimate.avgTagDist > VisionConstants.trustedMaxDistance){
             double addedStd = VisionConstants.distanceModifier * estimate.avgTagDist;
             xyStd += addedStd;
         }
-
-        xyStd *= trustLevel; //We might trust one camera more than another
 
 
         /*Trust measurements with multiple tags more */
@@ -138,5 +143,15 @@ public class LimelightCam implements CameraBase{
     @Override
     public double getTimeStamp() {
         return lastTimestamp;
+    }
+
+    @Override
+    public SimCameraProperties getCamProperties() {
+        return properties;
+    }
+
+    @Override
+    public double getTrustLevel() {
+        return trustLevel;
     }
 }
