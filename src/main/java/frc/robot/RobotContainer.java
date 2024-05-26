@@ -73,8 +73,8 @@ public class RobotContainer {
     /*Shooter up and down */
     joystick.R1().whileTrue(shooter.runOnce(() -> shooter.increaseAngle()).repeatedly());
     joystick.L1().whileTrue(shooter.runOnce(() -> shooter.decreaseAngle()).repeatedly());
-    joystick.triangle().onTrue(climber.runOnce(() -> climber.climbersUp()));
-    joystick.circle().onTrue(climber.runOnce(()-> climber.climbersDown()));
+    joystick.triangle().onTrue(shooter.goMaxAngle());
+    joystick.circle().onTrue(shooter.goMinAngle());
 
     joystick.L2().toggleOnTrue(shooter.getShooterMaxSpeedCommand());
     joystick.L2().toggleOnFalse(shooter.stopCommand());

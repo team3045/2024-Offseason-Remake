@@ -45,10 +45,10 @@ public class PositionerConstants {
     public static final double canvasWidth = Units.inchesToMeters(26.5); //arbitray units but meters
     public static final double canvasHeight = Units.inchesToMeters(48); //arbitrary units but meter
     public static final double length = Units.inchesToMeters(18); //match the canvasWidth and canvasHeight units, meters
-    public static final double cancoderOffset =  Units.degreesToRotations(-148.974609375+15); //rotations
+    public static final double startingPos = Units.degreesToRotations(30);
+    public static final double cancoderOffset =  Units.degreesToRotations(-150.820) + startingPos; //rotations
     public static final SensorDirectionValue cancoderDirection = SensorDirectionValue.Clockwise_Positive;
     public static final double sensorToMechanismRatio = 1;
-    public static final double feedbackRotorOffset = 0;
     public static final InvertedValue rightInvert = InvertedValue.Clockwise_Positive;
     public static final InvertedValue leftInvert = InvertedValue.CounterClockwise_Positive;
     public static final double gearing = (70 / 26) * (5) * (4) *(1/1.4);
@@ -66,15 +66,15 @@ public class PositionerConstants {
 
 
     /*PID Values */
-    public static final double pGain = 10;
+    public static final double pGain = 40;
     public static final double dGain = 0;
     public static final double iGain = 0;
 
     /*Constraints */
-    public static final double maxAngle = 60;
-    public static final double minAngle = 0;
-    public static final double maxVelo = 3;
-    public static final double maxAccel = 30; //reach in 0.1s 
+    public static final double maxAngle = 75;
+    public static final double minAngle = 30.2;
+    public static final double maxVelo = Units.degreesToRotations((maxAngle - minAngle)*5); //go from min to max angle at top speed in 0.2s
+    public static final double maxAccel = maxVelo*10; //reach in 0.1s 
    
 
     /*Configs */
@@ -93,7 +93,7 @@ public class PositionerConstants {
 
     public static final FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
         .withFeedbackRemoteSensorID(cancoderId).withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder)
-        .withSensorToMechanismRatio(sensorToMechanismRatio).withFeedbackRotorOffset(feedbackRotorOffset).withRotorToSensorRatio(gearing);
+        .withSensorToMechanismRatio(sensorToMechanismRatio).withRotorToSensorRatio(gearing);
     
     public static final Slot0Configs slot0Configs = new Slot0Configs()
         .withGravityType(GravityTypeValue.Arm_Cosine).withKP(pGain).withKI(dGain).withKD(iGain);

@@ -137,8 +137,8 @@ public class Shooter extends SubsystemBase {
     mechanismAngle = Rotation2d.fromRotations(getArmAngleRotations());
     mechanismLigament.setAngle(mechanismAngle);
 
-    SmartDashboard.putData("/Positioner/Arm/Mechanism", mechanism2d);
-    SmartDashboard.putNumber("/Positioner/Arm/Mechanism", getArmAngleDegrees());
+    SmartDashboard.putData("/Positioner/Mechanism", mechanism2d);
+    SmartDashboard.putNumber("/Positioner/Angle", getArmAngleDegrees());
     double pitch = -Units.degreesToRadians(mechanismLigament.getAngle()) + PositionerConstants.pitchOffset;
 
     pose3dPublisher.set(new Pose3d(
@@ -238,6 +238,8 @@ public class Shooter extends SubsystemBase {
     botShooterMotor.set(0.9);
   }
 
+
+  /*Command Factories */
   public Command getShooterSpeedCommand(double topDesiredRPS, double botDesiredRPS){
     return Commands.run(() -> setShooterRPS(topDesiredRPS, botDesiredRPS), this);
   }
@@ -248,5 +250,13 @@ public class Shooter extends SubsystemBase {
 
   public Command stopCommand(){
     return Commands.run(() -> setShooterRPS(0, 0), this);
+  }
+
+  public Command goMaxAngle(){
+    return Commands.run(() -> goToAngle(PositionerConstants.maxAngle), this);
+  }
+
+  public Command goMinAngle(){
+    return Commands.run(() -> goToAngle(PositionerConstants.minAngle), this);
   }
 }
