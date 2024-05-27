@@ -14,7 +14,9 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Vision.LimelightHelpers.PoseEstimate;
 import frc.robot.Vision.LimelightHelpers.RawFiducial;
@@ -26,6 +28,7 @@ public class GremlinLimelightCam implements CameraBase{
     private Vector<N3> lastStdDevs;
     private double lastTimestamp;
     private SimCameraProperties properties;
+    private boolean seesSpeaker;
 
     /*Between 0 and 1 Lower Values are more trusted 1 is the normal Level*/
     private double trustLevel; 
@@ -38,6 +41,12 @@ public class GremlinLimelightCam implements CameraBase{
 
         lastStdDevs = CameraBase.baseVisionStdDev;
         lastTimestamp = Timer.getFPGATimestamp();
+        seesSpeaker = false;
+
+        if(name.equals("front"))
+            LimelightHelpers.setPriorityTagID(
+                "front", 
+                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? 7 : 3);
     }
 
     @Override

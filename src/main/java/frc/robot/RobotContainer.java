@@ -11,9 +11,12 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import frc.robot.Constants.AngleLookUpTable;
 import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Subsystems.Climber;
@@ -23,6 +26,7 @@ import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.VisionSub;
 import frc.robot.Vision.CameraBase;
 import frc.robot.Vision.GremlinLimelightCam;
+import frc.robot.Vision.LimelightHelpers;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -48,6 +52,8 @@ public class RobotContainer {
       .withDeadband(MaxSpeed * 0.15).withRotationalDeadband(MaxAngularRate * 0.15) // Add a 15% deadband
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                // driving in open loop
+  private final SwerveRequest.FieldCentricFacingAngle driveWithAngle = new SwerveRequest.FieldCentricFacingAngle()
+      .withDeadband(MaxSpeed * 0.15).withDriveRequestType(DriveRequestType.OpenLoopVoltage);
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   private final Telemetry logger = new Telemetry(MaxSpeed);
@@ -79,8 +85,9 @@ public class RobotContainer {
     joystick.circle().onTrue(shooter.goMinAngle());
 
     joystick.L2().toggleOnTrue(shooter.getShooterMaxSpeedCommand());
-    joystick.L2().toggleOnFalse(shooter.stopCommand());
+    //joystick.L2().toggleOnFalse(shooter.stopCommand());
 
+    /*Toggle Intake */
     joystick.R2().toggleOnTrue(
       Commands.parallel(
         shooter.goIntakeAngle(),
@@ -91,6 +98,15 @@ public class RobotContainer {
       ).andThen(intake::stopBoth)
     );
 
+    /*Toggle aiming */
+    joystick.options().toggleOnTrue(Commands.parallel(
+      drivetrain.applyRequest(() -> driveWithAngle
+        .withVelocityX(-joystick.getLeftY() * MaxSpeed)
+        .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+        .withTargetDirection(drivetrain.getAngleForSpeaker())
+      ),
+      shooter.run(() -> shooter.goToAngle(drivetrain.getDistanceSpeaker()))
+    ));
   }
 
   public RobotContainer() {
