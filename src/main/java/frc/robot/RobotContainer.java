@@ -18,6 +18,7 @@ import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Subsystems.Climber;
 import frc.robot.Subsystems.CommandSwerveDrivetrain;
+import frc.robot.Subsystems.Intake;
 import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.VisionSub;
 import frc.robot.Vision.CameraBase;
@@ -40,6 +41,7 @@ public class RobotContainer {
   /*Subsystems */
   private final Shooter shooter = new Shooter();
   private final Climber climber = new Climber();
+  private final Intake intake = new Intake();
   public static final VisionSub vision = new VisionSub(cameras, drivetrain);
 
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -78,6 +80,16 @@ public class RobotContainer {
 
     joystick.L2().toggleOnTrue(shooter.getShooterMaxSpeedCommand());
     joystick.L2().toggleOnFalse(shooter.stopCommand());
+
+    joystick.R2().toggleOnTrue(
+      Commands.parallel(
+        shooter.goIntakeAngle(),
+        Commands.waitUntil(shooter::atIntake)
+          .andThen(intake::runIntakeMotor)
+          .andThen(intake::runFeedMotor)
+          .until(intake::noteDetected)
+      ).andThen(intake::stopBoth)
+    );
 
   }
 

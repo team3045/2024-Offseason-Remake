@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.PositionerConstants;
 import frc.robot.Constants.ShooterConstants;
 
@@ -174,7 +175,7 @@ public class Shooter extends SubsystemBase {
 
     double desiredRot = Units.degreesToRotations(desiredAng);
     MotionMagicVoltage request = new MotionMagicVoltage(desiredRot);
-    System.out.println("Going to Angle: " + desiredAng);
+    SmartDashboard.putNumber("/Positioner/Desired Angle", desiredAng);
     
     
     leftSideMotor.setControl(request.withSlot(0));
@@ -238,6 +239,14 @@ public class Shooter extends SubsystemBase {
     botShooterMotor.set(0.9);
   }
 
+  public boolean atAngle(double angle){
+    return Math.abs(angle-getArmAngleDegrees()) < 1;
+  }
+
+  public boolean atIntake(){
+    return atAngle(IntakeConstants.intakeAngle);
+  }
+
 
   /*Command Factories */
   public Command getShooterSpeedCommand(double topDesiredRPS, double botDesiredRPS){
@@ -258,5 +267,9 @@ public class Shooter extends SubsystemBase {
 
   public Command goMinAngle(){
     return Commands.run(() -> goToAngle(PositionerConstants.minAngle), this);
+  }
+
+  public Command goIntakeAngle(){
+    return Commands.run(() -> goToAngle(IntakeConstants.intakeAngle), this);
   }
 }
