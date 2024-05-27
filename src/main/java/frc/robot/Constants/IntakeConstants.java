@@ -8,9 +8,9 @@ import edu.wpi.first.math.util.Units;
 
 /** Add your docs here. */
 public class IntakeConstants {
-    public static final int intakeMotorId = 13;
-    public static final int feedMotorId = 2;
-    public static final String canbus = "3045 Canivore";
+    public static final int intakeMotorId = 12;
+    public static final int feedMotorId = 13;
+    public static final String canbus = "Canivore 3045";
 
     public static final double intakeSpeed = 0.4;
     public static final double feedSpeed = 0.4;

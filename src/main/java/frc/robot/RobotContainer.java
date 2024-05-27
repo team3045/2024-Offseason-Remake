@@ -92,8 +92,7 @@ public class RobotContainer {
       Commands.parallel(
         shooter.goIntakeAngle(),
         Commands.waitUntil(shooter::atIntake)
-          .andThen(intake::runIntakeMotor)
-          .andThen(intake::runFeedMotor)
+          .andThen(intake.runBoth())
           .until(intake::noteDetected)
       ).andThen(intake::stopBoth)
     );

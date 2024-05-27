@@ -7,6 +7,10 @@ package frc.robot.Subsystems;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.StaticBrake;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -40,6 +44,7 @@ import frc.robot.Constants.ShooterConstants;
 
 public class Shooter extends SubsystemBase {
   private Rotation2d mechanismAngle;
+  private double desiredAngle;
 
   private TalonFX leftSideMotor = new TalonFX(PositionerConstants.leftMotorId, PositionerConstants.canbus);
   private TalonFX rightSideMotor = new TalonFX(PositionerConstants.rightMotorId, PositionerConstants.canbus);
@@ -171,10 +176,13 @@ public class Shooter extends SubsystemBase {
       goToAngle(PositionerConstants.minAngle);
       return;
     }
+
+    desiredAngle = desiredAng; //update instance variable
     
 
     double desiredRot = Units.degreesToRotations(desiredAng);
     MotionMagicVoltage request = new MotionMagicVoltage(desiredRot);
+    //var request = new PositionVoltage(desiredRot);
     SmartDashboard.putNumber("/Positioner/Desired Angle", desiredAng);
     
     
@@ -191,12 +199,25 @@ public class Shooter extends SubsystemBase {
     goToAngle(getArmAngleDegrees()-2);
   }
 
-  @Override
-  public void periodic() {
-    updateMechanism();
+  public void requestHold(){
+    leftSideMotor.setControl(new StaticBrake());
+    rightSideMotor.setControl(new StaticBrake());
   }
 
   @Override
+  public void periodic() {
+    updateMechanism();
+
+    if(Math.abs(desiredAngle-getArmAngleDegrees()) < 0.3){
+      requestHold();
+    }
+
+    SmartDashboard.putNumber("iOutput", leftSideMotor.getClosedLoopIntegratedOutput().getValueAsDouble());
+    SmartDashboard.putNumber("dOutput", leftSideMotor.getClosedLoopDerivativeOutput().getValueAsDouble());
+    SmartDashboard.putNumber("pOutput", leftSideMotor.getClosedLoopProportionalOutput().getValueAsDouble());
+  }
+  
+ @Override
   public void simulationPeriodic(){
     //Called once per scheduler run in simulation mode
 
@@ -244,6 +265,10 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean atIntake(){
+    System.out.println("CHECK CHECK CHECK");
+    System.out.println("CHECK CHECK CHECK");
+    System.out.println("CHECK CHECK CHECK");
+    System.out.println("CHECK CHECK CHECK");
     return atAngle(IntakeConstants.intakeAngle);
   }
 

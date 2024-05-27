@@ -66,15 +66,15 @@ public class PositionerConstants {
 
 
     /*PID Values */
-    public static final double pGain = 50;
-    public static final double dGain = 2.5;
-    public static final double iGain = 13.5;
+    public static final double pGain = 35;
+    public static final double dGain = 0.8;
+    public static final double iGain = 55;
 
     /*Constraints */
     public static final double maxAngle = 75;
     public static final double minAngle = 30.2;
-    public static final double maxVelo = Units.degreesToRotations((maxAngle - minAngle)*5); //go from min to max angle at top speed in 0.2s
-    public static final double maxAccel = maxVelo*10; //reach in 0.1s 
+    public static final double maxVelo = Units.degreesToRotations((maxAngle - minAngle)*3); //go from min to max angle at top speed in 0.33s
+    public static final double maxAccel = maxVelo*10; //reach in 0.2s 
    
 
     /*Configs */
@@ -96,7 +96,7 @@ public class PositionerConstants {
         .withSensorToMechanismRatio(sensorToMechanismRatio).withRotorToSensorRatio(gearing);
     
     public static final Slot0Configs slot0Configs = new Slot0Configs()
-        .withGravityType(GravityTypeValue.Arm_Cosine).withKP(pGain).withKI(iGain).withKD(dGain);
+        .withKP(pGain).withKI(iGain).withKD(dGain).withKS(0.25);
       
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration()
       .withAudio(new AudioConfigs())

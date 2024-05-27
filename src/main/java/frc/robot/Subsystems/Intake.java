@@ -14,10 +14,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.DistanceSensorReader;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.ShooterConstants;
 
 public class Intake extends SubsystemBase {
   private TalonFX intakeMotor = new TalonFX(IntakeConstants.intakeMotorId, IntakeConstants.canbus);
-  private TalonFX feedMotor = new TalonFX(IntakeConstants.feedMotorId, IntakeConstants.canbus);
+  private TalonFX feedMotor = new TalonFX(IntakeConstants.feedMotorId, ShooterConstants.canbus);
   private DistanceSensorReader rangeSensorReader = new DistanceSensorReader();
 
   /*Run on seperate threat to avoid loop overruns */
@@ -36,11 +37,19 @@ public class Intake extends SubsystemBase {
   }
 
   public Command runIntakeMotor(){
+    System.out.println("RUNNING INTAKE");
     return this.run(() -> intakeMotor.set(IntakeConstants.intakeSpeed));
   }
 
   public Command runFeedMotor(){
     return this.run(() -> feedMotor.set(IntakeConstants.feedSpeed));
+  }
+
+  public Command runBoth(){
+    return this.run(() -> {
+      feedMotor.set(IntakeConstants.feedSpeed);
+      intakeMotor.set(IntakeConstants.intakeSpeed);
+    });
   }
 
   public Command stopIntakeMotor(){
@@ -56,6 +65,7 @@ public class Intake extends SubsystemBase {
   }
 
   public boolean noteDetected(){
-    return rangeSensorReader.getRange() > IntakeConstants.rangeSensorThreshold;
+    return false;
+    //return rangeSensorReader.getRange() > IntakeConstants.rangeSensorThreshold;
   }
 }
