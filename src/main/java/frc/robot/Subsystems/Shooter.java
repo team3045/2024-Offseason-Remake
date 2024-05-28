@@ -5,6 +5,8 @@
 package frc.robot.Subsystems;
 
 
+import java.util.concurrent.TimeUnit;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
@@ -29,6 +31,13 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.MutableMeasure;
+import edu.wpi.first.units.Unit;
+import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -38,9 +47,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.PositionerConstants;
 import frc.robot.Constants.ShooterConstants;
+
+import static edu.wpi.first.units.Units.*;
 
 public class Shooter extends SubsystemBase {
   private Rotation2d mechanismAngle;
@@ -77,7 +89,18 @@ public class Shooter extends SubsystemBase {
   private TalonFXSimState rightSim;
   private CANcoderSimState cancoderSim;
 
-
+  /*Sysid Values */
+  private final MutableMeasure<Voltage> appliedVoltage = MutableMeasure.mutable(Volts.of(0));
+  private final MutableMeasure<Angle> appliedAngle = MutableMeasure.mutable(Rotations.of(0));
+  private final MutableMeasure<Velocity<Angle>> appliedVelocity = MutableMeasure.mutable(RotationsPerSecond.of(0));
+  private final Measure<Velocity<Voltage>> rampRate = Volts.of(0.5).per(Seconds.of(1));
+  private final SysIdRoutine.Config sysidConfig = new SysIdRoutine.Config(
+    rampRate, 
+    null, 
+    null,
+    null);
+  private SysIdRoutine routine;
+ 
   /** Creates a new Positioner. */
   public Shooter() {
     configDevices();
@@ -94,6 +117,23 @@ public class Shooter extends SubsystemBase {
     if(Utils.isSimulation()){
       setUpSim();
     }
+
+    /*Set Up Sysid */
+    routine = new SysIdRoutine(
+      sysidConfig , 
+      new SysIdRoutine.Mechanism(
+        (Measure<Voltage> volts) -> applyVoltagePositioner(volts.in(Volts)),
+        log -> {
+          log.motor("LeftSideMotor")
+            .voltage(appliedVoltage.mut_replace(leftSideMotor.getMotorVoltage().getValueAsDouble(), Volts))
+            .angularPosition(appliedAngle.mut_replace(leftSideMotor.getPosition().getValueAsDouble(), Rotations))
+            .angularVelocity(appliedVelocity.mut_replace(leftSideMotor.getVelocity().getValueAsDouble(), RotationsPerSecond));
+          log.motor("RightSideMotor")
+            .voltage(appliedVoltage.mut_replace(rightSideMotor.getMotorVoltage().getValueAsDouble(), Volts))
+            .angularPosition(appliedAngle.mut_replace(rightSideMotor.getPosition().getValueAsDouble(), Rotations))
+            .angularVelocity(appliedVelocity.mut_replace(rightSideMotor.getVelocity().getValueAsDouble(), RotationsPerSecond));
+        }, 
+        this));
   }
 
   public void configDevices(){
@@ -181,13 +221,20 @@ public class Shooter extends SubsystemBase {
     
 
     double desiredRot = Units.degreesToRotations(desiredAng);
-    MotionMagicVoltage request = new MotionMagicVoltage(desiredRot);
-    //var request = new PositionVoltage(desiredRot);
+    
+    MotionMagicVoltage MMRequest = new MotionMagicVoltage(desiredRot);
+    PositionVoltage regRequest = new PositionVoltage(desiredRot);
     SmartDashboard.putNumber("/Positioner/Desired Angle", desiredAng);
     
-    
-    leftSideMotor.setControl(request.withSlot(0));
-    rightSideMotor.setControl(request.withSlot(0));
+    if(Math.abs(desiredAng - getArmAngleDegrees()) > PositionerConstants.normalPIDThreshold){
+      leftSideMotor.setControl(MMRequest.withSlot(0));
+      rightSideMotor.setControl(MMRequest.withSlot(0));
+    }
+    else{
+      leftSideMotor.setControl(regRequest.withSlot(0));
+      rightSideMotor.setControl(regRequest.withSlot(0));
+    }
+
 
   }
 
@@ -272,6 +319,13 @@ public class Shooter extends SubsystemBase {
     return atAngle(IntakeConstants.intakeAngle);
   }
 
+  /*SysId Methods */
+
+  public void applyVoltagePositioner(double volts){
+    leftSideMotor.setVoltage(volts);
+    rightSideMotor.setVoltage(volts);
+  }
+
 
   /*Command Factories */
   public Command getShooterSpeedCommand(double topDesiredRPS, double botDesiredRPS){
@@ -296,5 +350,13 @@ public class Shooter extends SubsystemBase {
 
   public Command goIntakeAngle(){
     return Commands.run(() -> goToAngle(IntakeConstants.intakeAngle), this);
+  }
+
+  public Command quasiPositionerRoutine(SysIdRoutine.Direction direction){
+    return routine.quasistatic(direction).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5);
+  }
+
+  public Command dynaPositionerRoutine(SysIdRoutine.Direction direction){
+    return routine.dynamic(direction).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5);
   }
 }

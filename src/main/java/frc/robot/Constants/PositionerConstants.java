@@ -55,6 +55,8 @@ public class PositionerConstants {
     public static final double armRootX = Units.inchesToMeters(13.25 - 3.25);
     public static final double armRootY = Units.inchesToMeters(9);
 
+    public static final double normalPIDThreshold = 20;
+
     /*Simulation & Physics*/
     public static final DCMotor motor = DCMotor.getKrakenX60(2);
     public static final double mass = 1; //Kg
