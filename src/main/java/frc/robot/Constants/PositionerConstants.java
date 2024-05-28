@@ -66,7 +66,6 @@ public class PositionerConstants {
     public static final double yOrigin = 0;
     public static final double zOrigin = Units.inchesToMeters(13);
 
-
     /*PID Values */
     public static final double pGain = 35;
     public static final double dGain = 0.8;

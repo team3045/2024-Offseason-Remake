@@ -5,17 +5,11 @@
 package frc.robot.Subsystems;
 
 
-import java.util.concurrent.TimeUnit;
-
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
-import com.ctre.phoenix6.controls.TorqueCurrentFOC;
-import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -32,10 +26,8 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
-import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
@@ -77,7 +69,7 @@ public class Shooter extends SubsystemBase {
     PositionerConstants.length, 
     Units.degreesToRadians(PositionerConstants.minAngle), 
     Units.degreesToRadians(PositionerConstants.maxAngle), 
-    true, //simulate gravity 
+    true,  
     0);
 
   /*Publishing */
@@ -99,7 +91,8 @@ public class Shooter extends SubsystemBase {
     null, 
     null,
     null);
-  private SysIdRoutine routine;
+  private SysIdRoutine armRoutine;
+  private SysIdRoutine flywheelRoutine;
  
   /** Creates a new Positioner. */
   public Shooter() {
@@ -119,7 +112,7 @@ public class Shooter extends SubsystemBase {
     }
 
     /*Set Up Sysid */
-    routine = new SysIdRoutine(
+    armRoutine = new SysIdRoutine(
       sysidConfig , 
       new SysIdRoutine.Mechanism(
         (Measure<Voltage> volts) -> applyVoltagePositioner(volts.in(Volts)),
@@ -134,6 +127,22 @@ public class Shooter extends SubsystemBase {
             .angularVelocity(appliedVelocity.mut_replace(rightSideMotor.getVelocity().getValueAsDouble(), RotationsPerSecond));
         }, 
         this));
+    flywheelRoutine = new SysIdRoutine(
+      sysidConfig, 
+      new SysIdRoutine.Mechanism(
+        (Measure<Voltage> volts) -> applyVoltageFlywheel(volts.in(Volts)), 
+        log -> {
+          log.motor("TopFlyWheelMotor")
+            .voltage(appliedVoltage.mut_replace(topShooterMotor.getMotorVoltage().getValueAsDouble(), Volts))
+            .angularPosition(appliedAngle.mut_replace(topShooterMotor.getPosition().getValueAsDouble(), Rotations))
+            .angularVelocity(appliedVelocity.mut_replace(topShooterMotor.getVelocity().getValueAsDouble(), RotationsPerSecond));
+          log.motor("BotFlyWheelMotor")
+            .voltage(appliedVoltage.mut_replace(botShooterMotor.getMotorVoltage().getValueAsDouble(), Volts))
+            .angularPosition(appliedAngle.mut_replace(botShooterMotor.getPosition().getValueAsDouble(), Rotations))
+            .angularVelocity(appliedVelocity.mut_replace(botShooterMotor.getVelocity().getValueAsDouble(), RotationsPerSecond));
+        }, 
+        this)
+    );
   }
 
   public void configDevices(){
@@ -205,15 +214,15 @@ public class Shooter extends SubsystemBase {
   }
 
   //In degrees
-  public void goToAngle(double desiredAng){
+  public void requestAngle(double desiredAng){
     if(desiredAng > PositionerConstants.maxAngle){
       System.out.println("Angle too High");
-      goToAngle(PositionerConstants.maxAngle);
+      requestAngle(PositionerConstants.maxAngle);
       return;
     }
     if(desiredAng < PositionerConstants.minAngle){
       System.out.println("Angle too Low");
-      goToAngle(PositionerConstants.minAngle);
+      requestAngle(PositionerConstants.minAngle);
       return;
     }
 
@@ -239,11 +248,11 @@ public class Shooter extends SubsystemBase {
   }
 
   public void increaseAngle(){
-    goToAngle(getArmAngleDegrees()+2);
+    requestAngle(getArmAngleDegrees()+2);
   }
 
   public void decreaseAngle(){
-    goToAngle(getArmAngleDegrees()-2);
+    requestAngle(getArmAngleDegrees()-2);
   }
 
   public void requestHold(){
@@ -312,18 +321,34 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean atIntake(){
-    System.out.println("CHECK CHECK CHECK");
-    System.out.println("CHECK CHECK CHECK");
-    System.out.println("CHECK CHECK CHECK");
-    System.out.println("CHECK CHECK CHECK");
     return atAngle(IntakeConstants.intakeAngle);
   }
 
   /*SysId Methods */
-
   public void applyVoltagePositioner(double volts){
     leftSideMotor.setVoltage(volts);
     rightSideMotor.setVoltage(volts);
+  }
+
+  public void applyVoltageFlywheel(double volts){
+    topShooterMotor.setVoltage(volts);
+    botShooterMotor.setVoltage(volts);
+  }
+
+  public Command quasiPositionerRoutine(SysIdRoutine.Direction direction){
+    return armRoutine.quasistatic(direction).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5);
+  }
+
+  public Command dynaPositionerRoutine(SysIdRoutine.Direction direction){
+    return armRoutine.dynamic(direction).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5);
+  }
+
+  public Command quasiFlywheelRoutine(SysIdRoutine.Direction direction){
+    return flywheelRoutine.quasistatic(direction);
+  }
+
+  public Command dynaFlywheelRoutine(SysIdRoutine.Direction direction){
+    return flywheelRoutine.dynamic(direction);
   }
 
 
@@ -341,22 +366,14 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command goMaxAngle(){
-    return Commands.run(() -> goToAngle(PositionerConstants.maxAngle), this);
+    return Commands.run(() -> requestAngle(PositionerConstants.maxAngle), this);
   }
 
   public Command goMinAngle(){
-    return Commands.run(() -> goToAngle(PositionerConstants.minAngle), this);
+    return Commands.run(() -> requestAngle(PositionerConstants.minAngle), this);
   }
 
   public Command goIntakeAngle(){
-    return Commands.run(() -> goToAngle(IntakeConstants.intakeAngle), this);
-  }
-
-  public Command quasiPositionerRoutine(SysIdRoutine.Direction direction){
-    return routine.quasistatic(direction).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5);
-  }
-
-  public Command dynaPositionerRoutine(SysIdRoutine.Direction direction){
-    return routine.dynamic(direction).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5);
+    return Commands.run(() -> requestAngle(IntakeConstants.intakeAngle), this);
   }
 }

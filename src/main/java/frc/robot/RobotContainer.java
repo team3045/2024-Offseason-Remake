@@ -104,7 +104,7 @@ public class RobotContainer {
         .withVelocityY(-joystick.getLeftX() * MaxSpeed)
         .withTargetDirection(drivetrain.getAngleForSpeaker())
       ),
-      shooter.run(() -> shooter.goToAngle(drivetrain.getDistanceSpeaker()))
+      shooter.run(() -> shooter.requestAngle(drivetrain.getDistanceSpeaker()))
     ));
   }
 
