@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import javax.sound.sampled.SourceDataLine;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
@@ -16,6 +18,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.AngleLookUpTable;
 import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.VisionConstants;
@@ -44,16 +47,15 @@ public class RobotContainer {
 
   /*Subsystems */
   private final Shooter shooter = new Shooter();
-  private final Climber climber = new Climber();
   private final Intake intake = new Intake();
-  public static final VisionSub vision = new VisionSub(cameras, drivetrain);
+  //public static final VisionSub vision = new VisionSub(cameras, drivetrain);
 
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(MaxSpeed * 0.15).withRotationalDeadband(MaxAngularRate * 0.15) // Add a 15% deadband
+      .withDeadband(MaxSpeed * 0.10).withRotationalDeadband(MaxAngularRate * 0.10) // Add a 10% deadband
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                // driving in open loop
   private final SwerveRequest.FieldCentricFacingAngle driveWithAngle = new SwerveRequest.FieldCentricFacingAngle()
-      .withDeadband(MaxSpeed * 0.15).withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+      .withDeadband(MaxSpeed * 0.15).withDriveRequestType(DriveRequestType.OpenLoopVoltage); //TODO: SWITCH TO VELOCITY 
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   private final Telemetry logger = new Telemetry(MaxSpeed);
@@ -66,12 +68,12 @@ public class RobotContainer {
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
-    joystick.square().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.cross().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+    // joystick.square().whileTrue(drivetrain.applyRequest(() -> brake));
+    // joystick.cross().whileTrue(drivetrain
+    //     .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
-    joystick.L2().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
+    joystick.triangle().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
@@ -81,11 +83,18 @@ public class RobotContainer {
     /*Shooter up and down */
     joystick.R1().whileTrue(shooter.runOnce(() -> shooter.increaseAngle()).repeatedly());
     joystick.L1().whileTrue(shooter.runOnce(() -> shooter.decreaseAngle()).repeatedly());
-    joystick.triangle().onTrue(shooter.goMaxAngle());
-    joystick.circle().onTrue(shooter.goMinAngle());
 
-    joystick.L2().toggleOnTrue(shooter.getShooterMaxSpeedCommand());
-    //joystick.L2().toggleOnFalse(shooter.stopCommand());
+    joystick.L2().toggleOnTrue(
+      Commands.parallel(
+        shooter.getShooterMaxSpeedCommand(),
+        Commands.waitSeconds(0.3) //TODO: Replace with waituntil proper velocity
+          .andThen(intake.runFeedMotor())
+      )
+      .handleInterrupt(() ->{
+        shooter.coastShooter();
+        intake.stopFeedRunnable();
+      })
+    );
 
     /*Toggle Intake */
     joystick.R2().toggleOnTrue(
@@ -93,26 +102,34 @@ public class RobotContainer {
         shooter.goIntakeAngle(),
         Commands.waitUntil(shooter::atIntake)
           .andThen(intake.runBoth())
-          .until(intake::noteDetected)
-      ).andThen(intake::stopBoth)
+      )
+      .until(intake::noteDetected)
+      .andThen(intake.runBack().withTimeout(0.2))
+      .andThen(() -> intake.stop())
+      .handleInterrupt(() -> intake.stop())
     );
 
     /*Toggle aiming */
-    joystick.options().toggleOnTrue(Commands.parallel(
-      drivetrain.applyRequest(() -> driveWithAngle
-        .withVelocityX(-joystick.getLeftY() * MaxSpeed)
-        .withVelocityY(-joystick.getLeftX() * MaxSpeed)
-        .withTargetDirection(drivetrain.getAngleForSpeaker())
-      ),
-      shooter.run(() -> shooter.requestAngle(drivetrain.getDistanceSpeaker()))
-    ));
+    // joystick.options().toggleOnTrue(Commands.parallel(
+    //   drivetrain.applyRequest(() -> driveWithAngle
+    //     .withVelocityX(-joystick.getLeftY() * MaxSpeed)
+    //     .withVelocityY(-joystick.getLeftX() * MaxSpeed)
+    //     .withTargetDirection(drivetrain.getAngleForSpeaker())
+    //   ),
+    //   shooter.run(() -> shooter.requestAngle(drivetrain.getDistanceSpeaker()))
+    // ));
+
+    joystick.square().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kReverse));
+    joystick.PS().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kForward));
+    joystick.cross().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kReverse));
+    joystick.circle().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kForward));
   }
 
   public RobotContainer() {
     configureBindings();
 
     /*Update Pose with vision measurements*/
-    vision.periodic();
+    //vision.periodic();
   }
 
   public Command getAutonomousCommand() {

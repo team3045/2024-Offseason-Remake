@@ -55,7 +55,7 @@ public class PositionerConstants {
     public static final double armRootX = Units.inchesToMeters(13.25 - 3.25);
     public static final double armRootY = Units.inchesToMeters(9);
 
-    public static final double normalPIDThreshold = 20;
+    public static final double normalPIDThreshold = 10;
 
     /*Simulation & Physics*/
     public static final DCMotor motor = DCMotor.getKrakenX60(2);
@@ -67,9 +67,9 @@ public class PositionerConstants {
     public static final double zOrigin = Units.inchesToMeters(13);
 
     /*PID Values */
-    public static final double pGain = 35;
-    public static final double dGain = 0.8;
-    public static final double iGain = 55;
+    public static final double pGain = 3000;
+    public static final double dGain = 50;
+    public static final double iGain = 0;
 
     /*Constraints */
     public static final double maxAngle = 75;
@@ -93,11 +93,11 @@ public class PositionerConstants {
     public static final VoltageConfigs voltageConfigs = new VoltageConfigs();
 
     public static final FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
-        .withFeedbackRemoteSensorID(cancoderId).withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder)
+        .withFeedbackRemoteSensorID(cancoderId).withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
         .withSensorToMechanismRatio(sensorToMechanismRatio).withRotorToSensorRatio(gearing);
     
     public static final Slot0Configs slot0Configs = new Slot0Configs()
-        .withKP(pGain).withKI(iGain).withKD(dGain).withKS(0.25);
+        .withKP(pGain).withKI(iGain).withKD(dGain);
       
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration()
       .withAudio(new AudioConfigs())

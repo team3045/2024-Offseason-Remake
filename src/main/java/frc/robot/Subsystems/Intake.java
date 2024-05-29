@@ -6,7 +6,15 @@ package frc.robot.Subsystems;
 
 import java.util.function.BooleanSupplier;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionDutyCycle;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.compound.Diff_DutyCycleOut_Position;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -29,6 +37,11 @@ public class Intake extends SubsystemBase {
     rangeSensorReader.run();
     rangeSensorNotifier.setName("Range Sensors");
     rangeSensorNotifier.startPeriodic(0.02);
+
+    feedMotor.getConfigurator().apply(
+      new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake));
+    intakeMotor.getConfigurator().apply(
+      new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake));
   }
 
   @Override
@@ -61,11 +74,28 @@ public class Intake extends SubsystemBase {
   }
 
   public Command stopBoth(){
-    return stopIntakeMotor().alongWith(stopFeedMotor());
+    return this.run(() -> {
+      feedMotor.stopMotor();
+      intakeMotor.stopMotor();
+    });
+  }
+
+  public void stop(){
+    feedMotor.stopMotor();
+    intakeMotor.stopMotor();
+  }
+
+  public void stopFeedRunnable(){
+    feedMotor.stopMotor();
+  }
+
+  public Command runBack(){
+    System.out.println("RUN BACKKKKKK");
+
+    return this.run(() -> feedMotor.set(-0.1));
   }
 
   public boolean noteDetected(){
-    return false;
-    //return rangeSensorReader.getRange() > IntakeConstants.rangeSensorThreshold;
+    return rangeSensorReader.getRange() < IntakeConstants.rangeSensorThreshold;
   }
 }

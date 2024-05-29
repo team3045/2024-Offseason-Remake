@@ -23,7 +23,7 @@ public class ShooterConstants {
     public static final int botMotorId = 15;
     public static final String canbus = "rio";
 
-    public static final InvertedValue inverted = InvertedValue.CounterClockwise_Positive;
+    public static final InvertedValue inverted = InvertedValue.Clockwise_Positive;
     public static final NeutralModeValue neutral = NeutralModeValue.Coast;
 
     /*Current Limits */

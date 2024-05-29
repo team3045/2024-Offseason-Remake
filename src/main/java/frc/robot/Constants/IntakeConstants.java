@@ -13,7 +13,7 @@ public class IntakeConstants {
     public static final String canbus = "Canivore 3045";
 
     public static final double intakeSpeed = 0.4;
-    public static final double feedSpeed = 0.4;
+    public static final double feedSpeed = 0.3;
 
     public static final double intakeAngle = 45;
 

@@ -6,9 +6,14 @@ package frc.robot.Subsystems;
 
 
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.controls.CoastOut;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.StaticBrake;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -45,6 +50,8 @@ import frc.robot.Constants.PositionerConstants;
 import frc.robot.Constants.ShooterConstants;
 
 import static edu.wpi.first.units.Units.*;
+
+import java.security.CodeSigner;
 
 public class Shooter extends SubsystemBase {
   private Rotation2d mechanismAngle;
@@ -231,8 +238,10 @@ public class Shooter extends SubsystemBase {
 
     double desiredRot = Units.degreesToRotations(desiredAng);
     
-    MotionMagicVoltage MMRequest = new MotionMagicVoltage(desiredRot);
-    PositionVoltage regRequest = new PositionVoltage(desiredRot);
+    // MotionMagicVoltage MMRequest = new MotionMagicVoltage(desiredRot);
+    // PositionVoltage regRequest = new PositionVoltage(desiredRot);
+    MotionMagicTorqueCurrentFOC MMRequest = new MotionMagicTorqueCurrentFOC(desiredRot);
+    PositionTorqueCurrentFOC regRequest = new PositionTorqueCurrentFOC(desiredRot);
     SmartDashboard.putNumber("/Positioner/Desired Angle", desiredAng);
     
     if(Math.abs(desiredAng - getArmAngleDegrees()) > PositionerConstants.normalPIDThreshold){
@@ -264,9 +273,9 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     updateMechanism();
 
-    if(Math.abs(desiredAngle-getArmAngleDegrees()) < 0.3){
-      requestHold();
-    }
+    // if(Math.abs(desiredAngle-getArmAngleDegrees()) < 0.3){
+    //   requestHold();
+    // }
 
     SmartDashboard.putNumber("iOutput", leftSideMotor.getClosedLoopIntegratedOutput().getValueAsDouble());
     SmartDashboard.putNumber("dOutput", leftSideMotor.getClosedLoopDerivativeOutput().getValueAsDouble());
@@ -316,6 +325,11 @@ public class Shooter extends SubsystemBase {
     botShooterMotor.set(0.9);
   }
 
+  public void coastShooter(){
+    topShooterMotor.setControl(new CoastOut());
+    botShooterMotor.setControl(new CoastOut());
+  }
+
   public boolean atAngle(double angle){
     return Math.abs(angle-getArmAngleDegrees()) < 1;
   }
@@ -336,7 +350,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command quasiPositionerRoutine(SysIdRoutine.Direction direction){
-    return armRoutine.quasistatic(direction).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5);
+    return Commands.print("QUASI " + direction).andThen(armRoutine.quasistatic(direction).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5));
   }
 
   public Command dynaPositionerRoutine(SysIdRoutine.Direction direction){

@@ -87,10 +87,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationInit(){
-    try {
-      RobotContainer.vision.initVisionSim();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    // try {
+    //   RobotContainer.vision.initVisionSim();
+    // } catch (IOException e) {
+    //   e.printStackTrace();
+    // }
   }
 }
