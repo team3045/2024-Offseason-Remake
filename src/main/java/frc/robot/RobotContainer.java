@@ -83,6 +83,7 @@ public class RobotContainer {
     /*Shooter up and down */
     joystick.R1().whileTrue(shooter.runOnce(() -> shooter.increaseAngle()).repeatedly());
     joystick.L1().whileTrue(shooter.runOnce(() -> shooter.decreaseAngle()).repeatedly());
+    
 
     joystick.L2().toggleOnTrue(
       Commands.parallel(
@@ -119,12 +120,13 @@ public class RobotContainer {
     //   shooter.run(() -> shooter.requestAngle(drivetrain.getDistanceSpeaker()))
     // ));
 
-    // joystick.square().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kReverse));
-    // joystick.PS().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kForward));
-    // joystick.cross().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kReverse));
-    // joystick.circle().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kForward));
+    joystick.square().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kReverse));
+    joystick.PS().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kForward));
+    joystick.cross().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kReverse));
+    joystick.circle().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kForward));
 
-    joystick.square().onTrue(shooter.increaseCurrent()); //Continuously increase output until arm moves for Kg and Ks
+    //joystick.square().onTrue(shooter.runOnce(() -> shooter.increaseCurrent())); //Continuously increase output until arm moves for Kg and Ks
+    //joystick.circle().onTrue(shooter.runOnce(() -> shooter.resetCurrent()));
     
   }
 

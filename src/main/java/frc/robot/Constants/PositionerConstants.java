@@ -46,7 +46,7 @@ public class PositionerConstants {
     public static final double canvasHeight = Units.inchesToMeters(48); //arbitrary units but meter
     public static final double length = Units.inchesToMeters(18); //match the canvasWidth and canvasHeight units, meters
     public static final double startingPos = Units.degreesToRotations(30);
-    public static final double cancoderOffset =  Units.degreesToRotations(-150.820) + startingPos; //rotations
+    public static final double cancoderOffset =  Units.degreesToRotations(-50.34)+startingPos; //rotations
     public static final SensorDirectionValue cancoderDirection = SensorDirectionValue.Clockwise_Positive;
     public static final double sensorToMechanismRatio = 1;
     public static final InvertedValue rightInvert = InvertedValue.Clockwise_Positive;
@@ -67,9 +67,11 @@ public class PositionerConstants {
     public static final double zOrigin = Units.inchesToMeters(13);
 
     /*PID Values */
-    public static final double pGain = 3000;
-    public static final double dGain = 50;
+    public static final double pGain = 300;
+    public static final double dGain = 0;
     public static final double iGain = 0;
+    public static final double kG = 0; //-12.496
+    public static final double kS = 0; //14.012
 
     /*Constraints */
     public static final double maxAngle = 75;
@@ -97,7 +99,7 @@ public class PositionerConstants {
         .withSensorToMechanismRatio(sensorToMechanismRatio).withRotorToSensorRatio(gearing);
     
     public static final Slot0Configs slot0Configs = new Slot0Configs()
-        .withKP(pGain).withKI(iGain).withKD(dGain);
+        .withKP(pGain).withKI(iGain).withKD(dGain).withKG(kG).withKS(kS).withGravityType(GravityTypeValue.Arm_Cosine);
       
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration()
       .withAudio(new AudioConfigs())

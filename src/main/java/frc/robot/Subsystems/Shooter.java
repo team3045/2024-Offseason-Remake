@@ -31,6 +31,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.MutableMeasure;
 import edu.wpi.first.units.Velocity;
@@ -92,7 +93,9 @@ public class Shooter extends SubsystemBase {
   private final MutableMeasure<Voltage> appliedVoltage = MutableMeasure.mutable(Volts.of(0));
   private final MutableMeasure<Angle> appliedAngle = MutableMeasure.mutable(Rotations.of(0));
   private final MutableMeasure<Velocity<Angle>> appliedVelocity = MutableMeasure.mutable(RotationsPerSecond.of(0));
+  private final MutableMeasure<Current> appliedCurrent = MutableMeasure.mutable(Amps.of(0));
   private final Measure<Velocity<Voltage>> rampRate = Volts.of(0.5).per(Seconds.of(1));
+  private final Measure<Velocity<Current>> currentRampRate = Amps.of(0.2).per(Seconds.of(1));
   private final SysIdRoutine.Config sysidConfig = new SysIdRoutine.Config(
     rampRate, 
     null, 
@@ -123,16 +126,18 @@ public class Shooter extends SubsystemBase {
     armRoutine = new SysIdRoutine(
       sysidConfig , 
       new SysIdRoutine.Mechanism(
-        (Measure<Voltage> volts) -> applyVoltagePositioner(volts.in(Volts)),
+        (Measure<Voltage> volts) -> setCurrent(volts.in(Volts)),
         log -> {
           log.motor("LeftSideMotor")
             .voltage(appliedVoltage.mut_replace(leftSideMotor.getMotorVoltage().getValueAsDouble(), Volts))
             .angularPosition(appliedAngle.mut_replace(leftSideMotor.getPosition().getValueAsDouble(), Rotations))
-            .angularVelocity(appliedVelocity.mut_replace(leftSideMotor.getVelocity().getValueAsDouble(), RotationsPerSecond));
+            .angularVelocity(appliedVelocity.mut_replace(leftSideMotor.getVelocity().getValueAsDouble(), RotationsPerSecond))
+            .current(appliedCurrent.mut_replace(leftSideMotor.getTorqueCurrent().getValueAsDouble(), Amps));
           log.motor("RightSideMotor")
             .voltage(appliedVoltage.mut_replace(rightSideMotor.getMotorVoltage().getValueAsDouble(), Volts))
             .angularPosition(appliedAngle.mut_replace(rightSideMotor.getPosition().getValueAsDouble(), Rotations))
-            .angularVelocity(appliedVelocity.mut_replace(rightSideMotor.getVelocity().getValueAsDouble(), RotationsPerSecond));
+            .angularVelocity(appliedVelocity.mut_replace(rightSideMotor.getVelocity().getValueAsDouble(), RotationsPerSecond))
+            .current(appliedCurrent.mut_replace(rightSideMotor.getTorqueCurrent().getValueAsDouble(), Amps));
         }, 
         this));
     flywheelRoutine = new SysIdRoutine(
@@ -152,7 +157,7 @@ public class Shooter extends SubsystemBase {
         this)
     );
 
-    current = 0;
+    current = 2.5;
   }
 
   public void configDevices(){
@@ -212,7 +217,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public double getArmAngleRotations(){
-    return cancoder.getPosition().getValueAsDouble();
+    return cancoder.getAbsolutePosition().getValueAsDouble();
   }
 
   public double getArmAngleDegrees(){
@@ -247,16 +252,8 @@ public class Shooter extends SubsystemBase {
     PositionTorqueCurrentFOC regRequest = new PositionTorqueCurrentFOC(desiredRot);
     SmartDashboard.putNumber("/Positioner/Desired Angle", desiredAng);
     
-    if(Math.abs(desiredAng - getArmAngleDegrees()) > PositionerConstants.normalPIDThreshold){
-      leftSideMotor.setControl(MMRequest.withSlot(0));
-      rightSideMotor.setControl(MMRequest.withSlot(0));
-    }
-    else{
-      leftSideMotor.setControl(regRequest.withSlot(0));
-      rightSideMotor.setControl(regRequest.withSlot(0));
-    }
-
-
+    leftSideMotor.setControl(MMRequest.withSlot(0));
+    rightSideMotor.setControl(MMRequest.withSlot(0));
   }
 
   public void increaseAngle(){
@@ -394,12 +391,22 @@ public class Shooter extends SubsystemBase {
     return Commands.run(() -> requestAngle(IntakeConstants.intakeAngle), this);
   }
 
-  public Command increaseCurrent(){
-    current++;
+  public void increaseCurrent(){
+    current+= 0.02;
     SmartDashboard.putNumber("Current Amps", current);
-    return this.run(() -> {
-      leftSideMotor.setControl(new TorqueCurrentFOC(current));
-      rightSideMotor.setControl(new TorqueCurrentFOC(current));
-    });
+    
+    leftSideMotor.setControl(new TorqueCurrentFOC(current));
+    rightSideMotor.setControl(new TorqueCurrentFOC(current));
+  }
+
+  public void setCurrent(double current){
+    leftSideMotor.setControl(new TorqueCurrentFOC(current));
+    rightSideMotor.setControl(new TorqueCurrentFOC(current));
+  }
+
+  public void resetCurrent(){
+    current = 2.5;
   }
 }
+
+
