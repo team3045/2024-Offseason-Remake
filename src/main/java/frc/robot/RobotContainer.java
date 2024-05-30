@@ -119,10 +119,13 @@ public class RobotContainer {
     //   shooter.run(() -> shooter.requestAngle(drivetrain.getDistanceSpeaker()))
     // ));
 
-    joystick.square().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kReverse));
-    joystick.PS().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kForward));
-    joystick.cross().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kReverse));
-    joystick.circle().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kForward));
+    // joystick.square().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kReverse));
+    // joystick.PS().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kForward));
+    // joystick.cross().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kReverse));
+    // joystick.circle().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kForward));
+
+    joystick.square().onTrue(shooter.increaseCurrent()); //Continuously increase output until arm moves for Kg and Ks
+    
   }
 
   public RobotContainer() {

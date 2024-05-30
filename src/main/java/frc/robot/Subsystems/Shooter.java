@@ -100,6 +100,7 @@ public class Shooter extends SubsystemBase {
     null);
   private SysIdRoutine armRoutine;
   private SysIdRoutine flywheelRoutine;
+  private double current;
  
   /** Creates a new Positioner. */
   public Shooter() {
@@ -150,6 +151,8 @@ public class Shooter extends SubsystemBase {
         }, 
         this)
     );
+
+    current = 0;
   }
 
   public void configDevices(){
@@ -389,5 +392,14 @@ public class Shooter extends SubsystemBase {
 
   public Command goIntakeAngle(){
     return Commands.run(() -> requestAngle(IntakeConstants.intakeAngle), this);
+  }
+
+  public Command increaseCurrent(){
+    current++;
+    SmartDashboard.putNumber("Current Amps", current);
+    return this.run(() -> {
+      leftSideMotor.setControl(new TorqueCurrentFOC(current));
+      rightSideMotor.setControl(new TorqueCurrentFOC(current));
+    });
   }
 }
