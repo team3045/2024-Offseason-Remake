@@ -248,10 +248,17 @@ public class Shooter extends SubsystemBase {
  
     MotionMagicTorqueCurrentFOC MMRequest = new MotionMagicTorqueCurrentFOC(desiredRot);
     PositionTorqueCurrentFOC regRequest = new PositionTorqueCurrentFOC(desiredRot);
+    
     SmartDashboard.putNumber("/Positioner/Desired Angle", desiredAng);
     
-    leftSideMotor.setControl(MMRequest.withSlot(0).withUpdateFreqHz(1000));
-    rightSideMotor.setControl(MMRequest.withSlot(0).withUpdateFreqHz(1000));
+    if(Math.abs(desiredAng - getArmAngleDegrees()) < PositionerConstants.normalPIDThreshold){
+      leftSideMotor.setControl(regRequest.withSlot(0).withUpdateFreqHz(1000));
+      rightSideMotor.setControl(regRequest.withSlot(0).withUpdateFreqHz(1000));
+    }
+    else{
+      leftSideMotor.setControl(MMRequest.withSlot(0).withUpdateFreqHz(1000));
+      rightSideMotor.setControl(MMRequest.withSlot(0).withUpdateFreqHz(1000));
+    }
   }
 
   public void increaseAngle(){
@@ -270,14 +277,6 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
     updateMechanism();
-
-    // if(Math.abs(desiredAngle-getArmAngleDegrees()) < 0.3){
-    //   requestHold();
-    // }
-
-    SmartDashboard.putNumber("iOutput", leftSideMotor.getClosedLoopIntegratedOutput().getValueAsDouble());
-    SmartDashboard.putNumber("dOutput", leftSideMotor.getClosedLoopDerivativeOutput().getValueAsDouble());
-    SmartDashboard.putNumber("pOutput", leftSideMotor.getClosedLoopProportionalOutput().getValueAsDouble());
   }
   
  @Override
