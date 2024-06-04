@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import javax.sound.sampled.SourceDataLine;
-
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
@@ -13,23 +11,16 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants.AngleLookUpTable;
 import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.Subsystems.Climber;
 import frc.robot.Subsystems.CommandSwerveDrivetrain;
 import frc.robot.Subsystems.Intake;
 import frc.robot.Subsystems.Shooter;
-import frc.robot.Subsystems.VisionSub;
 import frc.robot.Vision.CameraBase;
 import frc.robot.Vision.GremlinLimelightCam;
-import frc.robot.Vision.LimelightHelpers;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -120,10 +111,10 @@ public class RobotContainer {
     //   shooter.run(() -> shooter.requestAngle(drivetrain.getDistanceSpeaker()))
     // ));
 
-    joystick.square().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kReverse));
-    joystick.PS().onTrue(shooter.quasiPositionerRoutine(SysIdRoutine.Direction.kForward));
-    joystick.cross().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kReverse));
-    joystick.circle().onTrue(shooter.dynaPositionerRoutine(SysIdRoutine.Direction.kForward));
+    joystick.square().onTrue(shooter.quasiPositionerRoutineForward());
+    joystick.PS().onTrue(shooter.quasiPositionerRoutineReverse());
+    joystick.cross().onTrue(shooter.dynaPositionerRoutineForward());
+    joystick.circle().onTrue(shooter.dynaPositionerRoutineReverse());
 
     //joystick.square().onTrue(shooter.runOnce(() -> shooter.increaseCurrent())); //Continuously increase output until arm moves for Kg and Ks
     //joystick.circle().onTrue(shooter.runOnce(() -> shooter.resetCurrent()));

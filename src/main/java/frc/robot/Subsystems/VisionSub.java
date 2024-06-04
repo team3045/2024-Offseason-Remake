@@ -18,14 +18,10 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Vision.CameraBase;
 import frc.robot.Vision.GremlinLimelightCam;
 import frc.robot.Vision.GremlinPhotonCam;
-import frc.robot.Vision.LimelightHelpers;
 
 public class VisionSub extends SubsystemBase {
   private CameraBase[] cameras;

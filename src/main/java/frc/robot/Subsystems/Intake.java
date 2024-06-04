@@ -4,21 +4,12 @@
 
 package frc.robot.Subsystems;
 
-import java.util.function.BooleanSupplier;
-
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot1Configs;
-import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.PositionDutyCycle;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.compound.Diff_DutyCycleOut_Position;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.DistanceSensorReader;
 import frc.robot.Constants.IntakeConstants;
@@ -36,7 +27,7 @@ public class Intake extends SubsystemBase {
   public Intake() {
     rangeSensorReader.run();
     rangeSensorNotifier.setName("Range Sensors");
-    rangeSensorNotifier.startPeriodic(0.02);
+    rangeSensorNotifier.startPeriodic(0.01); //Run it at a higher freq to hopefully help intakes
 
     feedMotor.getConfigurator().apply(
       new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake));
@@ -50,7 +41,6 @@ public class Intake extends SubsystemBase {
   }
 
   public Command runIntakeMotor(){
-    System.out.println("RUNNING INTAKE");
     return this.run(() -> intakeMotor.set(IntakeConstants.intakeSpeed));
   }
 
@@ -90,8 +80,6 @@ public class Intake extends SubsystemBase {
   }
 
   public Command runBack(){
-    System.out.println("RUN BACKKKKKK");
-
     return this.run(() -> feedMotor.set(-0.1));
   }
 

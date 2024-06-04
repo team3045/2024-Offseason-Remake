@@ -349,12 +349,20 @@ public class Shooter extends SubsystemBase {
     botShooterMotor.setVoltage(volts);
   }
 
-  public Command quasiPositionerRoutine(SysIdRoutine.Direction direction){
-    return Commands.print("QUASI " + direction).andThen(armRoutine.quasistatic(direction).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5));
+  public Command quasiPositionerRoutineForward(){
+    return Commands.print("QUASI Forward").andThen(armRoutine.quasistatic(SysIdRoutine.Direction.kForward).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5));
   }
 
-  public Command dynaPositionerRoutine(SysIdRoutine.Direction direction){
-    return armRoutine.dynamic(direction).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5);
+  public Command quasiPositionerRoutineReverse(){
+    return Commands.print("QUASI Reverse").andThen(armRoutine.quasistatic(SysIdRoutine.Direction.kReverse).until(() -> getArmAngleDegrees() < PositionerConstants.minAngle + 5));
+  }
+
+  public Command dynaPositionerRoutineForward(){
+    return armRoutine.dynamic(SysIdRoutine.Direction.kForward).until(() -> getArmAngleDegrees() > PositionerConstants.maxAngle - 5);
+  }
+
+  public Command dynaPositionerRoutineReverse(){
+    return armRoutine.dynamic(SysIdRoutine.Direction.kReverse).until(() -> getArmAngleDegrees() < PositionerConstants.minAngle + 5);
   }
 
   public Command quasiFlywheelRoutine(SysIdRoutine.Direction direction){
