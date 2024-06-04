@@ -67,16 +67,17 @@ public class PositionerConstants {
     public static final double zOrigin = Units.inchesToMeters(13);
 
     /*PID Values */
-    public static final double pGain = 300;
-    public static final double dGain = 0;
+    public static final double pGain = 2500;
+    public static final double dGain = 50;
     public static final double iGain = 0;
-    public static final double kG = 0; //-12.496
-    public static final double kS = 0; //14.012
+    public static final double kG = 0.98412;//3.0249; //-12.496
+    public static final double kS = 0.44071; //14.012
+    public static final double kA = 10.697; 
 
     /*Constraints */
     public static final double maxAngle = 75;
     public static final double minAngle = 30.2;
-    public static final double maxVelo = Units.degreesToRotations((maxAngle - minAngle)*3); //go from min to max angle at top speed in 0.33s
+    public static final double maxVelo = Units.degreesToRotations((maxAngle - minAngle)*3); //go from min to max angle at top speed in 0.5s
     public static final double maxAccel = maxVelo*10; //reach in 0.2s 
    
 

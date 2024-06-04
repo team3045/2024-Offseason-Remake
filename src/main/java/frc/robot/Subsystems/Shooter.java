@@ -94,12 +94,12 @@ public class Shooter extends SubsystemBase {
   private final MutableMeasure<Angle> appliedAngle = MutableMeasure.mutable(Rotations.of(0));
   private final MutableMeasure<Velocity<Angle>> appliedVelocity = MutableMeasure.mutable(RotationsPerSecond.of(0));
   private final MutableMeasure<Current> appliedCurrent = MutableMeasure.mutable(Amps.of(0));
-  private final Measure<Velocity<Voltage>> rampRate = Volts.of(0.5).per(Seconds.of(1));
+  private final Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1));
   private final Measure<Velocity<Current>> currentRampRate = Amps.of(0.2).per(Seconds.of(1));
   private final SysIdRoutine.Config sysidConfig = new SysIdRoutine.Config(
     rampRate, 
-    null, 
-    null,
+    Volts.of(10), //30 Amps 
+    Seconds.of(30),
     null);
   private SysIdRoutine armRoutine;
   private SysIdRoutine flywheelRoutine;
@@ -129,7 +129,7 @@ public class Shooter extends SubsystemBase {
         (Measure<Voltage> volts) -> setCurrent(volts.in(Volts)),
         log -> {
           log.motor("LeftSideMotor")
-            .voltage(appliedVoltage.mut_replace(leftSideMotor.getMotorVoltage().getValueAsDouble(), Volts))
+            .voltage(appliedVoltage.mut_replace(leftSideMotor.getTorqueCurrent().getValueAsDouble(), Volts))
             .angularPosition(appliedAngle.mut_replace(leftSideMotor.getPosition().getValueAsDouble(), Rotations))
             .angularVelocity(appliedVelocity.mut_replace(leftSideMotor.getVelocity().getValueAsDouble(), RotationsPerSecond))
             .current(appliedCurrent.mut_replace(leftSideMotor.getTorqueCurrent().getValueAsDouble(), Amps));
@@ -245,15 +245,13 @@ public class Shooter extends SubsystemBase {
     
 
     double desiredRot = Units.degreesToRotations(desiredAng);
-    
-    // MotionMagicVoltage MMRequest = new MotionMagicVoltage(desiredRot);
-    // PositionVoltage regRequest = new PositionVoltage(desiredRot);
+ 
     MotionMagicTorqueCurrentFOC MMRequest = new MotionMagicTorqueCurrentFOC(desiredRot);
     PositionTorqueCurrentFOC regRequest = new PositionTorqueCurrentFOC(desiredRot);
     SmartDashboard.putNumber("/Positioner/Desired Angle", desiredAng);
     
-    leftSideMotor.setControl(MMRequest.withSlot(0));
-    rightSideMotor.setControl(MMRequest.withSlot(0));
+    leftSideMotor.setControl(MMRequest.withSlot(0).withUpdateFreqHz(1000));
+    rightSideMotor.setControl(MMRequest.withSlot(0).withUpdateFreqHz(1000));
   }
 
   public void increaseAngle(){
@@ -354,7 +352,9 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command quasiPositionerRoutineReverse(){
-    return Commands.print("QUASI Reverse").andThen(armRoutine.quasistatic(SysIdRoutine.Direction.kReverse).until(() -> getArmAngleDegrees() < PositionerConstants.minAngle + 5));
+    return Commands.print("QUASI Reverse")
+      .andThen(armRoutine.quasistatic(SysIdRoutine.Direction.kReverse).until(() -> getArmAngleDegrees() < PositionerConstants.minAngle + 5)
+      .andThen(Commands.print("Finished")));
   }
 
   public Command dynaPositionerRoutineForward(){
