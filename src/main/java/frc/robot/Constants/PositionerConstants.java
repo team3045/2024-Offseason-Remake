@@ -28,6 +28,7 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -46,7 +47,7 @@ public class PositionerConstants {
     public static final double canvasHeight = Units.inchesToMeters(48); //arbitrary units but meter
     public static final double length = Units.inchesToMeters(18); //match the canvasWidth and canvasHeight units, meters
     public static final double startingPos = Units.degreesToRotations(30);
-    public static final double cancoderOffset =  Units.degreesToRotations(-50.34)+startingPos; //rotations
+    public static final double cancoderOffset = Units.degreesToRotations(-21.006+90); //rotations
     public static final SensorDirectionValue cancoderDirection = SensorDirectionValue.Clockwise_Positive;
     public static final double sensorToMechanismRatio = 1;
     public static final InvertedValue rightInvert = InvertedValue.Clockwise_Positive;
@@ -67,16 +68,17 @@ public class PositionerConstants {
     public static final double zOrigin = Units.inchesToMeters(13);
 
     /*PID Values */
-    public static final double pGain = 2500;
+    public static final double pGain = 2800;
     public static final double dGain = 50;
     public static final double iGain = 0;
-    public static final double kG = 0.98412;//3.0249; //-12.496
-    public static final double kS = 0.44071; //14.012
-    public static final double kA = 10.697; 
+    public static final double kG = 2;//16.609; //0.14251
+    public static final double kS = 3; //0.23478 
+    public static final double kA = 0.33351; 
+    public static final double kV = 2.2451;
 
     /*Constraints */
-    public static final double maxAngle = 75;
-    public static final double minAngle = 30.2;
+    public static final double maxAngle = 166;
+    public static final double minAngle = 120;
     public static final double maxVelo = Units.degreesToRotations((maxAngle - minAngle)*3); //go from min to max angle at top speed in 0.5s
     public static final double maxAccel = maxVelo*10; //reach in 0.2s 
    
@@ -96,11 +98,11 @@ public class PositionerConstants {
     public static final VoltageConfigs voltageConfigs = new VoltageConfigs();
 
     public static final FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
-        .withFeedbackRemoteSensorID(cancoderId).withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
+        .withFeedbackRemoteSensorID(cancoderId).withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder)
         .withSensorToMechanismRatio(sensorToMechanismRatio).withRotorToSensorRatio(gearing);
     
     public static final Slot0Configs slot0Configs = new Slot0Configs()
-        .withKP(pGain).withKI(iGain).withKD(dGain).withKG(kG).withKS(kS).withGravityType(GravityTypeValue.Arm_Cosine);
+        .withKP(pGain).withKI(iGain).withKD(dGain).withKG(kG).withKS(kS).withGravityType(GravityTypeValue.Arm_Cosine).withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
       
     public static final TalonFXConfiguration motorConfig = new TalonFXConfiguration()
       .withAudio(new AudioConfigs())

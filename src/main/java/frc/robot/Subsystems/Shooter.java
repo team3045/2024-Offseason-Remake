@@ -94,11 +94,10 @@ public class Shooter extends SubsystemBase {
   private final MutableMeasure<Angle> appliedAngle = MutableMeasure.mutable(Rotations.of(0));
   private final MutableMeasure<Velocity<Angle>> appliedVelocity = MutableMeasure.mutable(RotationsPerSecond.of(0));
   private final MutableMeasure<Current> appliedCurrent = MutableMeasure.mutable(Amps.of(0));
-  private final Measure<Velocity<Voltage>> rampRate = Volts.of(1).per(Seconds.of(1));
-  private final Measure<Velocity<Current>> currentRampRate = Amps.of(0.2).per(Seconds.of(1));
+  private final Measure<Velocity<Voltage>> rampRate = Volts.of(2).per(Seconds.of(1));
   private final SysIdRoutine.Config sysidConfig = new SysIdRoutine.Config(
     rampRate, 
-    Volts.of(10), //30 Amps 
+    Volts.of(30), //30 Amps 
     Seconds.of(30),
     null);
   private SysIdRoutine armRoutine;
@@ -181,9 +180,9 @@ public class Shooter extends SubsystemBase {
       withMotorOutput(PositionerConstants.motorOutputConfigs.
         withInverted(PositionerConstants.rightInvert)));  
 
-    rightSideMotor.getPosition().setUpdateFrequency(50);
-    leftSideMotor.getPosition().setUpdateFrequency(50);
-    cancoder.getPosition().setUpdateFrequency(50);
+    rightSideMotor.getPosition().setUpdateFrequency(500);
+    leftSideMotor.getPosition().setUpdateFrequency(500);
+    cancoder.getPosition().setUpdateFrequency(500);
 
     topShooterMotor.getConfigurator().apply(ShooterConstants.config);
     botShooterMotor.getConfigurator().apply(ShooterConstants.config);
@@ -217,7 +216,9 @@ public class Shooter extends SubsystemBase {
   }
 
   public double getArmAngleRotations(){
-    return cancoder.getAbsolutePosition().getValueAsDouble();
+    return cancoder.getPosition().getValueAsDouble(); 
+    //return cancoder.getAbsolutePosition.getValueAsDouble;
+    //TODO
   }
 
   public double getArmAngleDegrees(){
@@ -251,22 +252,26 @@ public class Shooter extends SubsystemBase {
     
     SmartDashboard.putNumber("/Positioner/Desired Angle", desiredAng);
     
-    if(Math.abs(desiredAng - getArmAngleDegrees()) < PositionerConstants.normalPIDThreshold){
-      leftSideMotor.setControl(regRequest.withSlot(0).withUpdateFreqHz(1000));
-      rightSideMotor.setControl(regRequest.withSlot(0).withUpdateFreqHz(1000));
-    }
-    else{
-      leftSideMotor.setControl(MMRequest.withSlot(0).withUpdateFreqHz(1000));
-      rightSideMotor.setControl(MMRequest.withSlot(0).withUpdateFreqHz(1000));
-    }
+    // if(Math.abs(desiredAng - getArmAngleDegrees()) < PositionerConstants.normalPIDThreshold){
+    //   leftSideMotor.setControl(regRequest.withSlot(0).withUpdateFreqHz(1000));
+    //   rightSideMotor.setControl(regRequest.withSlot(0).withUpdateFreqHz(1000));
+    // }
+    // else{
+    //   leftSideMotor.setControl(MMRequest.withSlot(0).withUpdateFreqHz(1000));
+    //   rightSideMotor.setControl(MMRequest.withSlot(0).withUpdateFreqHz(1000));
+    // }
+
+    //temp
+    //leftSideMotor.setControl(regRequest.withSlot(0).withUpdateFreqHz(500));
+    rightSideMotor.setControl(regRequest.withSlot(0).withUpdateFreqHz(500));
   }
 
   public void increaseAngle(){
-    requestAngle(getArmAngleDegrees()+2);
+    requestAngle(getArmAngleDegrees()+10);
   }
 
   public void decreaseAngle(){
-    requestAngle(getArmAngleDegrees()-2);
+    requestAngle(getArmAngleDegrees()-10);
   }
 
   public void requestHold(){
@@ -402,12 +407,12 @@ public class Shooter extends SubsystemBase {
     current+= 0.02;
     SmartDashboard.putNumber("Current Amps", current);
     
-    leftSideMotor.setControl(new TorqueCurrentFOC(current));
+    //leftSideMotor.setControl(new TorqueCurrentFOC(current));
     rightSideMotor.setControl(new TorqueCurrentFOC(current));
   }
 
   public void setCurrent(double current){
-    leftSideMotor.setControl(new TorqueCurrentFOC(current));
+    //leftSideMotor.setControl(new TorqueCurrentFOC(current));
     rightSideMotor.setControl(new TorqueCurrentFOC(current));
   }
 

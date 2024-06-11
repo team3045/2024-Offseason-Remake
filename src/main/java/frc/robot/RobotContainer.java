@@ -59,9 +59,9 @@ public class RobotContainer {
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
-    joystick.square().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.cross().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+    // joystick.square().whileTrue(drivetrain.applyRequest(() -> brake));
+    // joystick.cross().whileTrue(drivetrain
+    //     .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
     joystick.triangle().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
@@ -72,8 +72,8 @@ public class RobotContainer {
     drivetrain.registerTelemetry(logger::telemeterize);
 
     /*Shooter up and down */
-    joystick.R1().whileTrue(shooter.runOnce(() -> shooter.increaseAngle()).repeatedly());
-    joystick.L1().whileTrue(shooter.runOnce(() -> shooter.decreaseAngle()).repeatedly());
+    joystick.R1().onTrue(shooter.runOnce(() -> shooter.increaseAngle()));
+    joystick.L1().onTrue(shooter.runOnce(() -> shooter.decreaseAngle()));
     
 
     joystick.L2().toggleOnTrue(
@@ -111,14 +111,10 @@ public class RobotContainer {
     //   shooter.run(() -> shooter.requestAngle(drivetrain.getDistanceSpeaker()))
     // ));
 
-    // joystick.square().onTrue(shooter.quasiPositionerRoutineForward());
-    // joystick.PS().onTrue(shooter.quasiPositionerRoutineReverse());
-    // joystick.cross().onTrue(shooter.dynaPositionerRoutineForward());
-    // joystick.circle().onTrue(shooter.dynaPositionerRoutineReverse());
-
-    joystick.square().onTrue(shooter.runOnce(() -> shooter.increaseCurrent())); //Continuously increase output until arm moves for Kg and Ks
-    joystick.circle().onTrue(shooter.runOnce(() -> shooter.resetCurrent()));
-    
+    joystick.square().onTrue(shooter.quasiPositionerRoutineForward());
+    joystick.PS().onTrue(shooter.quasiPositionerRoutineReverse());
+    joystick.cross().onTrue(shooter.dynaPositionerRoutineForward());
+    joystick.circle().onTrue(shooter.dynaPositionerRoutineReverse());
   }
 
   public RobotContainer() {
