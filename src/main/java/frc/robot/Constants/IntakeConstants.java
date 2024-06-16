@@ -15,7 +15,7 @@ public class IntakeConstants {
     public static final double intakeSpeed = 0.4;
     public static final double feedSpeed = 0.3;
 
-    public static final double intakeAngle = 45;
+    public static final double intakeAngle = 140;
 
     public static final double rangeSensorThreshold = Units.inchesToMeters(4) * 1000; //mm
 }

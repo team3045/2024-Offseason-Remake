@@ -17,15 +17,16 @@ public class AngleLookUpTable {
     public static final ArrayList<Double> speakerTags = new ArrayList<>(Arrays.asList(3.0,7.0));
 
     public static void initLookuptable(){
-        map.put(0.25, 1.0);
-        map.put(0.5, 1.0);
-        map.put(0.75, 1.0);
-        map.put(1.0, 1.0);
-        map.put(1.25, 1.0);
-        map.put(1.5, 1.0);
-        map.put(1.75, 1.0);
-        map.put(2.0, 1.0);
-        map.put(2.25, 1.0);
+        map.put(0.0,155.0);
+        map.put(0.25, 155.0);
+        map.put(0.5, 151.0);
+        map.put(0.75, 148.0);
+        map.put(1.0, 145.0);
+        map.put(1.25, 142.0);
+        map.put(1.5, 139.0);
+        map.put(1.75, 136.0);
+        map.put(2.0, 133.0);
+        map.put(2.25, 132.0);
         map.put(2.5, 1.0);
         map.put(2.75, 1.0);
         map.put(3.0, 1.0);

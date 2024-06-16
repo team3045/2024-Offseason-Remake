@@ -5,6 +5,7 @@
 package frc.robot.Constants;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
@@ -26,17 +27,24 @@ public class ShooterConstants {
     public static final InvertedValue inverted = InvertedValue.Clockwise_Positive;
     public static final NeutralModeValue neutral = NeutralModeValue.Coast;
 
+    public static final double gearing = (12.0) / (18.0);
+
     /*Current Limits */
     public static final double statorCurrentLimit = 60; //Amps
     public static final double supplyCurrentLimit = 40;
     public static final double supplyCurrentThreshold = 60;
     public static final double supplyCurrentTime = 0.1; //Seconds
 
-    /*Slot 0*/ //TODO: TUNE THESE
-    public static final double kS = 0.25;
-    public static final double kA = 0.175;
-    public static final double kV = 0.01;
-    public static final double kP = 0.2;
+    /*Slot 0*/ 
+    public static final double kS = 0.1146;
+    public static final double kA = 0.0036132;
+    public static final double kV = 0.082478;
+    public static final double kP = 1;
+
+    /*Max Speed */
+    public static double topMax = 145 * (0.95);
+    public static double botMax = 145 * (0.9);
+
 
     /*Motion Magic */
     public static final double maxAccel = 400; //Rot per Sec^2
@@ -58,5 +66,6 @@ public class ShooterConstants {
                 .withKA(kA)
                 .withKV(kV)
                 .withKP(kP)
-                .withKS(kS));
+                .withKS(kS)).
+            withFeedback(new FeedbackConfigs().withSensorToMechanismRatio(gearing));
 }

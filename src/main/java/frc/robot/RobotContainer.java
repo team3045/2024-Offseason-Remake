@@ -11,9 +11,11 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.Subsystems.CommandSwerveDrivetrain;
@@ -59,9 +61,9 @@ public class RobotContainer {
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ));
 
-    // joystick.square().whileTrue(drivetrain.applyRequest(() -> brake));
-    // joystick.cross().whileTrue(drivetrain
-    //     .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+    joystick.square().whileTrue(drivetrain.applyRequest(() -> brake));
+    joystick.cross().whileTrue(drivetrain
+        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
 
     // reset the field-centric heading on left bumper press
     joystick.triangle().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
@@ -76,10 +78,11 @@ public class RobotContainer {
     joystick.L1().onTrue(shooter.runOnce(() -> shooter.decreaseAngle()));
     
 
-    joystick.L2().toggleOnTrue(
+    joystick.L2()
+    .toggleOnTrue(
       Commands.parallel(
         shooter.getShooterMaxSpeedCommand(),
-        Commands.waitSeconds(0.3) //TODO: Replace with waituntil proper velocity
+        Commands.waitUntil(() -> shooter.isMaxSpeed()) 
           .andThen(intake.runFeedMotor())
       )
       .handleInterrupt(() ->{
@@ -101,20 +104,26 @@ public class RobotContainer {
       .handleInterrupt(() -> intake.stop())
     );
 
-    /*Toggle aiming */
-    // joystick.options().toggleOnTrue(Commands.parallel(
-    //   drivetrain.applyRequest(() -> driveWithAngle
-    //     .withVelocityX(-joystick.getLeftY() * MaxSpeed)
-    //     .withVelocityY(-joystick.getLeftX() * MaxSpeed)
-    //     .withTargetDirection(drivetrain.getAngleForSpeaker())
-    //   ),
-    //   shooter.run(() -> shooter.requestAngle(drivetrain.getDistanceSpeaker()))
-    // ));
+    joystick.circle().onTrue(
+      shooter.stopCommand().withTimeout(0.1)
+      .andThen(shooter.run(() -> shooter.requestAngle(SmartDashboard.getNumber("Mapping Angle", 138)))
+      .until(() -> shooter.atAngle(SmartDashboard.getNumber("Mapping Angle", 138))))
+      .andThen(shooter.getShooterMaxSpeedCommand())
+    );
 
-    joystick.square().onTrue(shooter.quasiPositionerRoutineForward());
-    joystick.PS().onTrue(shooter.quasiPositionerRoutineReverse());
-    joystick.cross().onTrue(shooter.dynaPositionerRoutineForward());
-    joystick.circle().onTrue(shooter.dynaPositionerRoutineReverse());
+
+    /*Positioner SYSID */
+    // joystick.square().onTrue(shooter.quasiPositionerRoutineForward());
+    // joystick.PS().onTrue(shooter.quasiPositionerRoutineReverse());
+    // joystick.cross().onTrue(shooter.dynaPositionerRoutineForward());
+    // joystick.circle().onTrue(shooter.dynaPositionerRoutineReverse());
+
+    /*Flywheel SYSID */
+    // joystick.square().onTrue(shooter.quasiFlywheelRoutine(Direction.kForward));
+    // joystick.PS().onTrue(shooter.quasiFlywheelRoutine(Direction.kReverse));
+    // joystick.cross().onTrue(shooter.dynaFlywheelRoutine(Direction.kForward));
+    // joystick.circle().onTrue(shooter.dynaFlywheelRoutine(Direction.kReverse));
+
   }
 
   public RobotContainer() {

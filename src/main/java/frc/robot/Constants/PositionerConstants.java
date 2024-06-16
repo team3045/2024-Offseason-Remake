@@ -52,7 +52,7 @@ public class PositionerConstants {
     public static final double sensorToMechanismRatio = 1;
     public static final InvertedValue rightInvert = InvertedValue.Clockwise_Positive;
     public static final InvertedValue leftInvert = InvertedValue.CounterClockwise_Positive;
-    public static final double gearing = (70 / 26) * (5) * (4) *(1/1.4);
+    public static final double gearing = (70.0 / 26.0) * (5.0) * (4.0) * (1.0/1.4);
     public static final double armRootX = Units.inchesToMeters(13.25 - 3.25);
     public static final double armRootY = Units.inchesToMeters(9);
 
@@ -68,11 +68,11 @@ public class PositionerConstants {
     public static final double zOrigin = Units.inchesToMeters(13);
 
     /*PID Values */
-    public static final double pGain = 2800;
-    public static final double dGain = 50;
+    public static final double pGain = 300;
+    public static final double dGain = 0;
     public static final double iGain = 0;
-    public static final double kG = 2;//16.609; //0.14251
-    public static final double kS = 3; //0.23478 
+    public static final double kG = 0;//16.609; //0.14251
+    public static final double kS = 0; //0.23478 
     public static final double kA = 0.33351; 
     public static final double kV = 2.2451;
 
@@ -98,7 +98,7 @@ public class PositionerConstants {
     public static final VoltageConfigs voltageConfigs = new VoltageConfigs();
 
     public static final FeedbackConfigs feedbackConfigs = new FeedbackConfigs()
-        .withFeedbackRemoteSensorID(cancoderId).withFeedbackSensorSource(FeedbackSensorSourceValue.RemoteCANcoder)
+        .withFeedbackRemoteSensorID(cancoderId).withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
         .withSensorToMechanismRatio(sensorToMechanismRatio).withRotorToSensorRatio(gearing);
     
     public static final Slot0Configs slot0Configs = new Slot0Configs()
