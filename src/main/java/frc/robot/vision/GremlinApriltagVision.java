@@ -73,7 +73,7 @@ public class GremlinApriltagVision extends SubsystemBase {
       double timestamp = unprocessedResult.getTimestampSeconds();
       double singleTagAdjustment = 1.0;
 
-      // Continue if the camera doesn't have any targets
+      //Continue if the camera doesn't have any targets
       if (!unprocessedResult.hasTargets()) {
         continue;
       }
@@ -118,7 +118,7 @@ public class GremlinApriltagVision extends SubsystemBase {
           cameraPose = bestCamPose;
           calculatedRobotPose = bestRobotPose;
         } else if (betterRotationDiff){
-          //the rotation based on best pose is closer to our current estimated rotation
+          //if the rotation based on best pose is closer to our current estimated rotation
           cameraPose = bestCamPose;
           calculatedRobotPose = bestRobotPose;
         } else {
@@ -131,6 +131,7 @@ public class GremlinApriltagVision extends SubsystemBase {
         //TODO: Log Camera Pose from single tag for lines, and robot pose too
       }
 
+      //null check I choose you!
       if(cameraPose == null || calculatedRobotPose == null) continue;
 
       // Move on to next camera if robot pose is off the field
