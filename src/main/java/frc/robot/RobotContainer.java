@@ -14,9 +14,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
-import frc.robot.Constants.TunerConstants;
-import frc.robot.Subsystems.CommandSwerveDrivetrain;
-import frc.robot.Subsystems.Positioner;
+import frc.robot.constants.TunerConstants;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Positioner;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -62,7 +62,6 @@ public class RobotContainer {
     joystick.L1().whileTrue(arm.runOnce(() -> arm.decreaseAngle()).repeatedly());
     joystick.triangle().whileTrue(arm.runOnce(()-> arm.increaseAngle()).repeatedly());
     joystick.circle().whileTrue(arm.runOnce(()-> arm.decreaseAngle()).repeatedly());
-
   }
 
   public RobotContainer() {
