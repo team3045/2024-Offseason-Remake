@@ -12,7 +12,10 @@ import java.util.function.Supplier;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import dev.doglog.DogLog;
+
 import static frc.robot.constants.FieldConstants.aprilTags;
+import static frc.robot.constants.VisionConstants.CAMERA_LOG_PATH;
 import static frc.robot.constants.VisionConstants.EXCLUDED_TAG_IDS;
 import static frc.robot.constants.VisionConstants.MAX_AMBIGUITY;
 import static frc.robot.constants.VisionConstants.THETA_STDDEV_MODEL;
@@ -20,14 +23,17 @@ import static frc.robot.constants.VisionConstants.XY_STDDEV_MODEL;
 import static frc.robot.constants.VisionConstants.FIELD_BORDER_MARGIN;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commons.GeomUtil;
 import frc.robot.commons.TimestampedVisionUpdate;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.SingleTagAdjusters;
+import frc.robot.logging.GremlinLogger;
 
 public class GremlinApriltagVision extends SubsystemBase {
   private BreadPhotonCamera[] cameras;
@@ -72,13 +78,17 @@ public class GremlinApriltagVision extends SubsystemBase {
       List<Pose3d> tagPose3ds = new ArrayList<>();
       double timestamp = unprocessedResult.getTimestampSeconds();
       double singleTagAdjustment = 1.0;
+      String logPath = CAMERA_LOG_PATH + cameras[i].getName();
+
+      DogLog.log(logPath + "/Hastargets", unprocessedResult.hasTargets());
+      DogLog.log(logPath + "/LatencyMS", unprocessedResult.getLatencyMillis());
+      DogLog.log(logPath + "/Timestamp", timestamp);
+
 
       // Continue if the camera doesn't have any targets
       if (!unprocessedResult.hasTargets()) {
         continue;
-      }
-
-      //TODO: Log hasTargets and latency and timestamp and any other useful camera values
+      }      
 
       //if it has a MultiTag result we prefer to use that
       boolean shouldUseMultiTag = unprocessedResult.getMultiTagResult().estimatedPose.isPresent;
@@ -95,7 +105,7 @@ public class GremlinApriltagVision extends SubsystemBase {
           //TODO: add logs of each tag here
         }
 
-        //TODO: Log Camera pose (multitag) for advntage scope lines
+        DogLog.log(logPath + "/CameraPose (MultiTag)", cameraPose);
       } else {
         PhotonTrackedTarget target = unprocessedResult.getBestTarget();
 
@@ -128,7 +138,8 @@ public class GremlinApriltagVision extends SubsystemBase {
 
         tagPose3ds.add(tagPose);
         singleTagAdjustment = SingleTagAdjusters.getAdjustmentForTag(target.getFiducialId());
-        //TODO: Log Camera Pose from single tag for lines, and robot pose too
+
+        DogLog.log(logPath + "/CameraPose (SingleTag)", cameraPose);
       }
 
       if(cameraPose == null || calculatedRobotPose == null) continue;
@@ -158,30 +169,26 @@ public class GremlinApriltagVision extends SubsystemBase {
         thetaStdDev = THETA_STDDEV_MODEL.predict(avgDistance);
       }
 
-      if(shouldUseMultiTag){
-        visionUpdates.add(
-          new TimestampedVisionUpdate(
-            calculatedRobotPose, 
-            timestamp, 
-            VecBuilder.fill(
-              xyStdDev,
-              xyStdDev,
-              thetaStdDev
-            ))
-        );
+      Vector<N3> stdDevs = VecBuilder.fill(
+        xyStdDev,
+        xyStdDev,
+        thetaStdDev
+      );
+
+      if(!shouldUseMultiTag){
+        stdDevs.times(singleTagAdjustment);
       }
-      else{
-        visionUpdates.add(
-          new TimestampedVisionUpdate(
-            calculatedRobotPose, 
-            timestamp, 
-            VecBuilder.fill(
-              singleTagAdjustment * xyStdDev,
-              singleTagAdjustment * xyStdDev,
-              singleTagAdjustment * thetaStdDev
-            ))
-        );
-      }
+
+      visionUpdates.add(
+        new TimestampedVisionUpdate(
+          calculatedRobotPose, 
+          timestamp, 
+          stdDevs));
+
+
+      DogLog.log(logPath+ "/VisionPose", calculatedRobotPose);
+      DogLog.log(logPath + "/TagsUsed", tagPose3ds.size());
+      GremlinLogger.logStdDevs(logPath, stdDevs);
     }
   }
 }

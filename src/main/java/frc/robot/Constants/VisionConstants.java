@@ -14,6 +14,8 @@ public class VisionConstants {
     //private constructor so cant be instantiated
     private VisionConstants(){}
 
+    public static final String CAMERA_LOG_PATH = "VISION/CAMERAS/";
+
     public static final Set<Integer> EXCLUDED_TAG_IDS = new HashSet<>();
 
     public static final double MAX_AMBIGUITY = 0.15;
@@ -35,4 +37,5 @@ public class VisionConstants {
           },
           new double[] {0.008, 0.027, 0.015, 0.044, 0.04, 0.078, 0.049, 0.027, 0.059, 0.029, 0.068},
           1);
+      
 }
