@@ -56,6 +56,8 @@ public class TunerConstants {
     private static final String kCANbusName = "Canivore 3045";
     private static final int kPigeonId = 1;
 
+    public static final double kMaxAccelXY = 5; //m per s^2
+    public static final double kMaxAccelTheta = 2; //radians per s^2
 
     // These are only used for simulation
     private static final double kSteerInertia = 0.00001;

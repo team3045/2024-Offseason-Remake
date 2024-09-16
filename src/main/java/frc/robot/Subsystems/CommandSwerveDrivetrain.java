@@ -8,10 +8,13 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.constants.GlobalConstants;
+import frc.robot.constants.TunerConstants;
 
 /**
  * Class that extends the Phoenix SwerveDrivetrain class and implements subsystem
@@ -36,7 +39,34 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
     }
 
     public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
-        return run(() -> this.setControl(requestSupplier.get()));
+        SwerveRequest appliedRequest = requestSupplier.get();
+
+        
+
+        if(appliedRequest instanceof SwerveRequest.FieldCentric){
+            double desiredAccelX = (((SwerveRequest.FieldCentric)appliedRequest).VelocityX - getState().speeds.vxMetersPerSecond) / GlobalConstants.tLoop;
+            double desiredAccelY = (((SwerveRequest.FieldCentric)appliedRequest).VelocityY - getState().speeds.vyMetersPerSecond) / GlobalConstants.tLoop;
+            double desiredAccelTheta = (((SwerveRequest.FieldCentric)appliedRequest).RotationalRate - getState().speeds.omegaRadiansPerSecond) / GlobalConstants.tLoop;
+
+            double requestedAccelX = Math.abs(desiredAccelX) > TunerConstants.kMaxAccelXY  
+                ? Math.copySign(TunerConstants.kMaxAccelXY, desiredAccelX)
+                : desiredAccelX;
+            double requestedAccelY = Math.abs(desiredAccelY) > TunerConstants.kMaxAccelXY
+                ? Math.copySign(TunerConstants.kMaxAccelXY, desiredAccelY)
+                : desiredAccelY;
+            double requestedAccelTheta = Math.abs(desiredAccelTheta) > TunerConstants.kMaxAccelTheta
+                ? Math.copySign(TunerConstants.kMaxAccelTheta, desiredAccelTheta)
+                : desiredAccelTheta;
+
+            SwerveRequest newReq = ((SwerveRequest.FieldCentric)appliedRequest)
+                .withVelocityX(requestedAccelX * GlobalConstants.tLoop + getState().speeds.vxMetersPerSecond)
+                .withVelocityY(requestedAccelY * GlobalConstants.tLoop + getState().speeds.vyMetersPerSecond)
+                .withRotationalRate(requestedAccelTheta * GlobalConstants.tLoop + getState().speeds.omegaRadiansPerSecond);
+            
+            return run(() -> this.setControl(newReq));
+        }
+
+        return run(() -> this.setControl(appliedRequest));
     }
 
     private void startSimThread() {
